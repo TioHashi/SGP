@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+
+{% block title %}SGP - {{ titulo }}{% endblock %}
+
+{% block content %}
+  <section class="page-heading">
+    <p>Dados funcionais e pessoais</p>
+    <h1>{{ titulo }}</h1>
+  </section>
+
+  <form class="data-form" method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <small>{{ field.errors|striptags }}</small>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <div class="form-actions">
+      <a href="{% url 'servidor_lista' %}">Cancelar</a>
+      <button type="submit">Salvar</button>
+    </div>
+  </form>
+{% endblock %}

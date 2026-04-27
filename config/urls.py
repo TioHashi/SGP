@@ -17,11 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
-from core.views import dashboard
+from core.views import dashboard, servidor_criar, servidor_editar, servidor_lista
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', LoginView.as_view(template_name='core/login.html'), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('dashboard/', dashboard, name='dashboard'),
+    path('servidores/', servidor_lista, name='servidor_lista'),
+    path('servidores/novo/', servidor_criar, name='servidor_criar'),
+    path('servidores/<int:pk>/editar/', servidor_editar, name='servidor_editar'),
 ]

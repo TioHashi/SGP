@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+
+{% block title %}SGP - Servidores{% endblock %}
+
+{% block content %}
+  <section class="page-heading split-heading">
+    <div>
+      <p>Cadastros permitidos para o seu usuario</p>
+      <h1>Servidores</h1>
+    </div>
+    <a class="primary-link" href="{% url 'servidor_criar' %}">Novo servidor</a>
+  </section>
+
+  <form class="search-form" method="get">
+    <input type="search" name="q" value="{{ busca }}" placeholder="Buscar por nome">
+    <button type="submit">Buscar</button>
+  </form>
+
+  <section class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Escola</th>
+          <th>Cargo</th>
+          <th>Vinculo</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for servidor in servidores %}
+          <tr>
+            <td>{{ servidor.nome }}</td>
+            <td>{{ servidor.escola.nome }}</td>
+            <td>{{ servidor.cargo|default:'-' }}</td>
+            <td>{{ servidor.vinculo|default:'-' }}</td>
+            <td>{% if servidor.ativo %}Ativo{% else %}Inativo{% endif %}</td>
+            <td><a href="{% url 'servidor_editar' servidor.pk %}">Editar</a></td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6">Nenhum servidor encontrado.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

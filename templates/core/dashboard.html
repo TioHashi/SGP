@@ -20,8 +20,19 @@
 
   <section class="work-panel">
     <div>
-      <h2>Base pronta</h2>
-      <p>Este projeto novo ja esta preparado para receber os cadastros, consultas e relatorios do SGP sem carregar arquivos quebrados do projeto antigo.</p>
+      <h2>Servidores por escola</h2>
+      {% if por_escola %}
+        <div class="simple-table">
+          {% for item in por_escola %}
+            <div>
+              <span>{{ item.escola__nome }}</span>
+              <strong>{{ item.total }}</strong>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>Nenhum servidor cadastrado ainda.</p>
+      {% endif %}
     </div>
   </section>
 {% endblock %}

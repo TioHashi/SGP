@@ -199,6 +199,147 @@ a {
   margin-top: 18px;
 }
 
+.messages {
+  margin-bottom: 18px;
+}
+
+.message {
+  background: #e9f7ef;
+  border: 1px solid #b7e1c2;
+  border-radius: 6px;
+  color: #1b6840;
+  margin: 0;
+  padding: 12px 14px;
+}
+
+.split-heading {
+  align-items: end;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.primary-link,
+.search-form button,
+.form-actions button {
+  background: var(--brand);
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 11px 14px;
+}
+
+.search-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.search-form input {
+  flex: 1;
+}
+
+.search-form input,
+.field-control {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  min-height: 42px;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.table-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 13px 14px;
+  text-align: left;
+}
+
+th {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+td a {
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.data-form {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 20px;
+}
+
+.form-field {
+  display: grid;
+  gap: 6px;
+}
+
+.form-field label {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.form-field small {
+  color: var(--accent);
+}
+
+.form-field:has(textarea),
+.form-actions {
+  grid-column: 1 / -1;
+}
+
+.field-control[type='checkbox'] {
+  min-height: auto;
+  width: auto;
+}
+
+.form-actions {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.form-actions a {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.simple-table {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.simple-table div {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+}
+
 @media (max-width: 760px) {
   .topbar,
   .main-nav {
@@ -211,6 +352,16 @@ a {
   }
 
   .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .split-heading,
+  .search-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .data-form {
     grid-template-columns: 1fr;
   }
 }
