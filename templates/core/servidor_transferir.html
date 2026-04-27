@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+
+{% block title %}SGP - Transferir servidor{% endblock %}
+
+{% block content %}
+  <section class="page-heading">
+    <p>Alterar escola vinculada ao servidor</p>
+    <h1>Transferir servidor</h1>
+  </section>
+
+  <section class="transfer-summary">
+    <strong>{{ servidor.nome }}</strong>
+    <span>Escola atual: {{ servidor.escola.nome }}</span>
+  </section>
+
+  <form class="period-form" method="post">
+    {% csrf_token %}
+    <div class="form-field">
+      <label for="{{ form.escola_destino.id_for_label }}">{{ form.escola_destino.label }}</label>
+      {{ form.escola_destino }}
+      {% if form.escola_destino.errors %}
+        <small>{{ form.escola_destino.errors|striptags }}</small>
+      {% endif %}
+    </div>
+    <button type="submit">Transferir</button>
+  </form>
+{% endblock %}

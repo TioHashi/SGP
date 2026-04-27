@@ -26,6 +26,7 @@ from core.views import (
     servidor_criar,
     servidor_editar,
     servidor_lista,
+    servidor_transferir,
 )
 
 urlpatterns = [
@@ -36,6 +37,7 @@ urlpatterns = [
     path('servidores/', servidor_lista, name='servidor_lista'),
     path('servidores/novo/', servidor_criar, name='servidor_criar'),
     path('servidores/<int:pk>/editar/', servidor_editar, name='servidor_editar'),
+    path('servidores/<int:pk>/transferir/', servidor_transferir, name='servidor_transferir'),
     path('folha/', folha_selecionar, name='folha_selecionar'),
     path('folha/<str:mes>/<str:ano>/', folha_mensal, name='folha_mensal'),
     path('relatorios/', relatorios, name='relatorios'),

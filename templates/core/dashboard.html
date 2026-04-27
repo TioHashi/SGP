@@ -3,12 +3,18 @@
 {% block title %}SGP - Inicio{% endblock %}
 
 {% block content %}
-  <section class="page-heading">
-    <p>Bem-vindo, {{ request.user.username }}</p>
-    <h1>Painel inicial</h1>
+  {{ dashboard_data|json_script:'dashboard-data' }}
+
+  <section class="dashboard-hero">
+    <div>
+      <p>Bem-vindo, {{ request.user.username }}</p>
+      <h1>{% if escola_atual %}{{ escola_atual.nome }}{% else %}Painel geral do SGP{% endif %}</h1>
+      <span>Os indicadores abaixo usam somente os servidores que este usuario pode acessar.</span>
+    </div>
+    <a class="primary-link" href="{% url 'servidor_criar' %}">Novo servidor</a>
   </section>
 
-  <section class="card-grid">
+  <section class="card-grid dashboard-cards">
     {% for card in cards %}
       <article class="metric-card">
         <span>{{ card.label }}</span>
@@ -18,21 +24,107 @@
     {% endfor %}
   </section>
 
-  <section class="work-panel">
-    <div>
-      <h2>Servidores por escola</h2>
-      {% if por_escola %}
-        <div class="simple-table">
-          {% for item in por_escola %}
+  <section class="dashboard-layout">
+    <article class="chart-panel-app">
+      <div class="panel-heading">
+        <div>
+          <p>Percentual por vinculo</p>
+          <h2>Efetivo x Temporario</h2>
+        </div>
+      </div>
+      <div class="chart-box">
+        <canvas id="vinculoChart"></canvas>
+      </div>
+      <div class="percentage-list">
+        {% for item in vinculo_resumo %}
+          <div>
+            <span>{{ item.label }}</span>
+            <strong>{{ item.percentual }}%</strong>
+            <small>{{ item.total }} servidor(es)</small>
+          </div>
+        {% empty %}
+          <p>Nenhum vinculo cadastrado.</p>
+        {% endfor %}
+      </div>
+    </article>
+
+    <article class="chart-panel-app">
+      <div class="panel-heading">
+        <div>
+          <p>Distribuicao por funcao</p>
+          <h2>Funcoes cadastradas</h2>
+        </div>
+      </div>
+      <div class="chart-box chart-box-wide">
+        <canvas id="funcaoChart"></canvas>
+      </div>
+    </article>
+  </section>
+
+  <section class="dashboard-layout dashboard-layout-secondary">
+    <article class="work-panel">
+      <h2>Funcoes mais frequentes</h2>
+      {% if funcoes %}
+        <div class="rank-list">
+          {% for item in funcoes %}
             <div>
-              <span>{{ item.escola__nome }}</span>
+              <span>{{ item.funcao }}</span>
               <strong>{{ item.total }}</strong>
             </div>
           {% endfor %}
         </div>
       {% else %}
-        <p>Nenhum servidor cadastrado ainda.</p>
+        <p>Nenhuma funcao cadastrada.</p>
       {% endif %}
-    </div>
+    </article>
+
+    <article class="work-panel">
+      <h2>Cargos mais frequentes</h2>
+      {% if cargos %}
+        <div class="rank-list">
+          {% for item in cargos %}
+            <div>
+              <span>{{ item.cargo }}</span>
+              <strong>{{ item.total }}</strong>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>Nenhum cargo cadastrado.</p>
+      {% endif %}
+    </article>
   </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const dashboardData = JSON.parse(document.getElementById('dashboard-data').textContent);
+    const colors = ['#1e5f74', '#c93d3d', '#f2c94c', '#2f9e44', '#6f42c1', '#f08c00'];
+
+    new Chart(document.getElementById('vinculoChart'), {
+      type: 'doughnut',
+      data: {
+        labels: dashboardData.vinculos.labels,
+        datasets: [{ data: dashboardData.vinculos.data, backgroundColor: colors }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    new Chart(document.getElementById('funcaoChart'), {
+      type: 'bar',
+      data: {
+        labels: dashboardData.funcoes.labels,
+        datasets: [{ label: 'Servidores', data: dashboardData.funcoes.data, backgroundColor: '#1e5f74' }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        plugins: { legend: { display: false } }
+      }
+    });
+  </script>
 {% endblock %}

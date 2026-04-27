@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.db.models import Count, Max
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import FolhaFiltroForm, ServidorForm
+from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
 from .models import Escola, Frequencia, Servidor
 
 
@@ -27,18 +27,70 @@ def servidores_permitidos(user):
 @login_required
 def dashboard(request):
     servidores = servidores_permitidos(request.user)
+    servidores_ativos = servidores.filter(ativo=True)
     escolas = Escola.objects.filter(ativa=True)
+    escola_atual = None
     if not request.user.is_superuser:
-        escola = escola_do_usuario(request.user)
-        escolas = escolas.filter(pk=escola.pk) if escola else escolas.none()
+        escola_atual = escola_do_usuario(request.user)
+        escolas = escolas.filter(pk=escola_atual.pk) if escola_atual else escolas.none()
 
     cards = [
-        {'label': 'Servidores', 'value': servidores.filter(ativo=True).count(), 'hint': 'Cadastros ativos'},
+        {'label': 'Servidores', 'value': servidores_ativos.count(), 'hint': 'Cadastros ativos'},
         {'label': 'Escolas', 'value': escolas.count(), 'hint': 'Unidades acessiveis'},
-        {'label': 'Vinculos', 'value': servidores.values('vinculo').exclude(vinculo='').distinct().count(), 'hint': 'Tipos cadastrados'},
+        {'label': 'Inativos', 'value': servidores.filter(ativo=False).count(), 'hint': 'Cadastros desativados'},
+        {'label': 'Funcoes', 'value': servidores.values('funcao').exclude(funcao='').distinct().count(), 'hint': 'Funcoes diferentes'},
     ]
-    por_escola = servidores.values('escola__nome').annotate(total=Count('id')).order_by('escola__nome')
-    return render(request, 'core/dashboard.html', {'cards': cards, 'por_escola': por_escola})
+    vinculos = list(
+        servidores_ativos
+        .values('vinculo')
+        .annotate(total=Count('id'))
+        .order_by('vinculo')
+    )
+    funcoes = list(
+        servidores_ativos
+        .values('funcao')
+        .exclude(funcao='')
+        .annotate(total=Count('id'))
+        .order_by('-total', 'funcao')[:10]
+    )
+    cargos = list(
+        servidores_ativos
+        .values('cargo')
+        .exclude(cargo='')
+        .annotate(total=Count('id'))
+        .order_by('-total', 'cargo')[:6]
+    )
+
+    total_vinculos = sum(item['total'] for item in vinculos) or 1
+    vinculo_resumo = [
+        {
+            'label': item['vinculo'] or 'Nao informado',
+            'total': item['total'],
+            'percentual': round((item['total'] / total_vinculos) * 100, 1),
+        }
+        for item in vinculos
+    ]
+
+    dashboard_data = {
+        'vinculos': {
+            'labels': [item['label'] for item in vinculo_resumo],
+            'data': [item['total'] for item in vinculo_resumo],
+        },
+        'funcoes': {
+            'labels': [item['funcao'] or 'Nao informado' for item in funcoes],
+            'data': [item['total'] for item in funcoes],
+        },
+    }
+
+    contexto = {
+        'cards': cards,
+        'escola_atual': escola_atual,
+        'vinculo_resumo': vinculo_resumo,
+        'funcoes': funcoes,
+        'cargos': cargos,
+        'dashboard_data': dashboard_data,
+    }
+    return render(request, 'core/dashboard.html', contexto)
 
 
 @login_required
@@ -69,6 +121,24 @@ def servidor_editar(request, pk):
         messages.success(request, 'Servidor atualizado com sucesso.')
         return redirect('servidor_lista')
     return render(request, 'core/servidor_form.html', {'form': form, 'titulo': 'Editar servidor'})
+
+
+@login_required
+def servidor_transferir(request, pk):
+    if not request.user.is_superuser:
+        messages.error(request, 'Apenas o superusuario pode transferir servidores entre escolas.')
+        return redirect('servidor_lista')
+
+    servidor = get_object_or_404(Servidor.objects.select_related('escola'), pk=pk)
+    form = TransferirServidorForm(request.POST or None, servidor=servidor)
+    if request.method == 'POST' and form.is_valid():
+        origem = servidor.escola
+        servidor.escola = form.cleaned_data['escola_destino']
+        servidor.save(update_fields=['escola', 'atualizado_em'])
+        messages.success(request, f'{servidor.nome} transferido de {origem.nome} para {servidor.escola.nome}.')
+        return redirect('servidor_lista')
+
+    return render(request, 'core/servidor_transferir.html', {'form': form, 'servidor': servidor})
 
 
 @login_required

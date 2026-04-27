@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Frequencia, Servidor
+from .models import Escola, Frequencia, Servidor
 
 
 class ServidorForm(forms.ModelForm):
@@ -74,3 +74,16 @@ class FolhaFiltroForm(forms.Form):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs.setdefault('class', 'field-control')
+
+
+class TransferirServidorForm(forms.Form):
+    escola_destino = forms.ModelChoiceField(
+        queryset=Escola.objects.filter(ativa=True),
+        label='Escola de destino',
+    )
+
+    def __init__(self, *args, servidor=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if servidor:
+            self.fields['escola_destino'].queryset = Escola.objects.filter(ativa=True).exclude(pk=servidor.escola_id)
+        self.fields['escola_destino'].widget.attrs.setdefault('class', 'field-control')
