@@ -25,8 +25,7 @@
           <th>Cargo</th>
           <th>Vinculo</th>
           <th>Status</th>
-          <th></th>
-          {% if request.user.is_superuser %}<th></th>{% endif %}
+          <th>Acoes</th>
         </tr>
       </thead>
       <tbody>
@@ -37,10 +36,14 @@
             <td>{{ servidor.cargo|default:'-' }}</td>
             <td>{{ servidor.vinculo|default:'-' }}</td>
             <td>{% if servidor.ativo %}Ativo{% else %}Inativo{% endif %}</td>
-            <td><a href="{% url 'servidor_editar' servidor.pk %}">Editar</a></td>
-            {% if request.user.is_superuser %}
-              <td><a href="{% url 'servidor_transferir' servidor.pk %}">Transferir</a></td>
-            {% endif %}
+            <td>
+              <div class="row-actions">
+                <a class="mini-action" href="{% url 'servidor_editar' servidor.pk %}">Editar cadastro</a>
+                {% if request.user.is_superuser %}
+                  <a class="mini-action transfer-action" href="{% url 'servidor_transferir' servidor.pk %}">Transferir escola</a>
+                {% endif %}
+              </div>
+            </td>
           </tr>
         {% empty %}
           <tr>

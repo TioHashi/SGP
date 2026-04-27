@@ -3,9 +3,14 @@
 {% block title %}SGP - {{ titulo }}{% endblock %}
 
 {% block content %}
-  <section class="page-heading">
-    <p>Dados funcionais e pessoais</p>
-    <h1>{{ titulo }}</h1>
+  <section class="page-heading split-heading">
+    <div>
+      <p>Dados funcionais e pessoais</p>
+      <h1>{{ titulo }}</h1>
+    </div>
+    {% if servidor and request.user.is_superuser %}
+      <a class="primary-link" href="{% url 'servidor_transferir' servidor.pk %}">Transferir escola</a>
+    {% endif %}
   </section>
 
   <form class="data-form" method="post">

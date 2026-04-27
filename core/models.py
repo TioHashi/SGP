@@ -126,7 +126,7 @@ class Frequencia(models.Model):
         ('14', 'Ferias'),
     ]
 
-    ANO_CHOICES = [(str(ano), str(ano)) for ano in range(2024, 2031)]
+    ANO_CHOICES = [(str(ano), str(ano)) for ano in range(2026, 2031)]
 
     OBS_CHOICES = [
         ('', ''),

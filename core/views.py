@@ -120,7 +120,7 @@ def servidor_editar(request, pk):
         form.save()
         messages.success(request, 'Servidor atualizado com sucesso.')
         return redirect('servidor_lista')
-    return render(request, 'core/servidor_form.html', {'form': form, 'titulo': 'Editar servidor'})
+    return render(request, 'core/servidor_form.html', {'form': form, 'titulo': 'Editar servidor', 'servidor': servidor})
 
 
 @login_required
