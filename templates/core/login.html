@@ -1,0 +1,38 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SGP - Login</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-card" aria-label="Login do SGP">
+      <div class="login-brand">
+        <div class="brand-badge">SGP</div>
+        <div>
+          <p>Sistema de Gestao</p>
+          <h1>Entrar</h1>
+        </div>
+      </div>
+
+      {% if form.errors %}
+        <div class="alert">Usuario ou senha invalidos.</div>
+      {% endif %}
+
+      <form method="post" class="login-form">
+        {% csrf_token %}
+        <label for="{{ form.username.id_for_label }}">Usuario</label>
+        {{ form.username }}
+
+        <label for="{{ form.password.id_for_label }}">Senha</label>
+        {{ form.password }}
+
+        <button type="submit">Entrar</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

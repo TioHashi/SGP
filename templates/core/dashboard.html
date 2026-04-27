@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+
+{% block title %}SGP - Inicio{% endblock %}
+
+{% block content %}
+  <section class="page-heading">
+    <p>Bem-vindo, {{ request.user.username }}</p>
+    <h1>Painel inicial</h1>
+  </section>
+
+  <section class="card-grid">
+    {% for card in cards %}
+      <article class="metric-card">
+        <span>{{ card.label }}</span>
+        <strong>{{ card.value }}</strong>
+        <p>{{ card.hint }}</p>
+      </article>
+    {% endfor %}
+  </section>
+
+  <section class="work-panel">
+    <div>
+      <h2>Base pronta</h2>
+      <p>Este projeto novo ja esta preparado para receber os cadastros, consultas e relatorios do SGP sem carregar arquivos quebrados do projeto antigo.</p>
+    </div>
+  </section>
+{% endblock %}
