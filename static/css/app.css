@@ -413,7 +413,7 @@ td a {
 .frequency-header {
   align-items: start;
   display: grid;
-  grid-template-columns: 170px 1fr 230px;
+  grid-template-columns: 170px 1fr 170px;
   min-height: 145px;
 }
 
@@ -425,9 +425,9 @@ td a {
 
 .report-logo-right {
   justify-self: end;
-  max-height: 95px;
+  max-height: 122px;
   object-fit: contain;
-  width: 215px;
+  width: 150px;
 }
 
 .official-title {
