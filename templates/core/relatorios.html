@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+
+{% block title %}SGP - Relatorios{% endblock %}
+
+{% block content %}
+  <section class="page-heading">
+    <p>Folhas salvas para consulta e impressao</p>
+    <h1>Relatorios</h1>
+  </section>
+
+  <section class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Periodo</th>
+          <th>Registros</th>
+          <th>Ultima atualizacao</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for folha in folhas %}
+          <tr>
+            <td>{{ folha.nome_mes }} / {{ folha.ano }}</td>
+            <td>{{ folha.total }}</td>
+            <td>{{ folha.atualizado_em|date:'d/m/Y H:i' }}</td>
+            <td><a href="{% url 'relatorio_folha' folha.mes folha.ano %}">Abrir</a></td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4">Nenhuma folha salva ainda.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

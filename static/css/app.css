@@ -221,7 +221,9 @@ a {
 
 .primary-link,
 .search-form button,
-.form-actions button {
+.form-actions button,
+.period-form button,
+.report-toolbar button {
   background: var(--brand);
   border: 0;
   border-radius: 6px;
@@ -340,6 +342,119 @@ td a {
   padding-top: 10px;
 }
 
+.period-form {
+  align-items: end;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr auto;
+  padding: 20px;
+}
+
+.period-form button {
+  min-height: 42px;
+}
+
+.frequency-table th,
+.frequency-table td {
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.mini-field,
+.mini-select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  min-height: 34px;
+  padding: 0 8px;
+}
+
+.mini-field {
+  width: 72px;
+}
+
+.mini-select {
+  min-width: 190px;
+}
+
+.bottom-actions {
+  margin-top: 16px;
+}
+
+.report-toolbar {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.report-toolbar a {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.print-sheet {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 22px;
+}
+
+.print-header {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 18px;
+}
+
+.print-header div {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.print-header strong,
+.print-header span {
+  display: block;
+}
+
+.print-header span {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.print-table th,
+.print-table td {
+  font-size: 0.82rem;
+  padding: 8px;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .topbar,
+  .messages,
+  .report-toolbar {
+    display: none;
+  }
+
+  .page {
+    padding: 0;
+    width: 100%;
+  }
+
+  .print-sheet {
+    border: 0;
+    padding: 0;
+  }
+}
+
 @media (max-width: 760px) {
   .topbar,
   .main-nav {
@@ -362,6 +477,11 @@ td a {
   }
 
   .data-form {
+    grid-template-columns: 1fr;
+  }
+
+  .period-form,
+  .print-header {
     grid-template-columns: 1fr;
   }
 }

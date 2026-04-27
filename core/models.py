@@ -106,3 +106,58 @@ class Servidor(models.Model):
 
     def __str__(self):
         return self.nome
+
+
+class Frequencia(models.Model):
+    MESES_CHOICES = [
+        ('1', 'Janeiro'),
+        ('2', 'Fevereiro'),
+        ('3', 'Marco'),
+        ('4', 'Abril'),
+        ('5', 'Maio'),
+        ('6', 'Junho'),
+        ('7', 'Julho'),
+        ('8', 'Agosto'),
+        ('9', 'Setembro'),
+        ('10', 'Outubro'),
+        ('11', 'Novembro'),
+        ('12', 'Dezembro'),
+        ('13', 'Decimo Terceiro'),
+        ('14', 'Ferias'),
+    ]
+
+    ANO_CHOICES = [(str(ano), str(ano)) for ano in range(2024, 2031)]
+
+    OBS_CHOICES = [
+        ('', ''),
+        ('LICENCA SEM VENCIMENTO', 'Licenca sem vencimento'),
+        ('LICENCA MATERNIDADE', 'Licenca maternidade'),
+        ('LICENCA PREMIO', 'Licenca premio'),
+        ('LICENCA PARA ESTUDO', 'Licenca para estudo'),
+        ('FERIAS', 'Ferias'),
+        ('FALTA', 'Falta'),
+        ('PRO-LABORE', 'Pro-labore'),
+        ('DIARIA', 'Diaria'),
+        ('DOBRA DE TURNO', 'Dobra de turno'),
+        ('ATESTADO MEDICO', 'Atestado medico'),
+        ('DECIMO TERCEIRO', 'Decimo terceiro'),
+        ('DESLIGAMENTO', 'Desligamento'),
+        ('INSS', 'INSS'),
+        ('OUTROS', 'Outros'),
+    ]
+
+    servidor = models.ForeignKey(Servidor, on_delete=models.CASCADE, related_name='frequencias')
+    mes = models.CharField(max_length=2, choices=MESES_CHOICES)
+    ano = models.CharField(max_length=4, choices=ANO_CHOICES)
+    faltas = models.PositiveSmallIntegerField(default=0)
+    observacoes = models.CharField(max_length=80, choices=OBS_CHOICES, blank=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['servidor__nome']
+        unique_together = ('servidor', 'mes', 'ano')
+        verbose_name = 'frequencia'
+        verbose_name_plural = 'frequencias'
+
+    def __str__(self):
+        return f'{self.servidor.nome} - {self.get_mes_display()}/{self.ano}'

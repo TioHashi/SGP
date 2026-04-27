@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+
+{% block title %}SGP - Folha{% endblock %}
+
+{% block content %}
+  <section class="page-heading">
+    <p>Selecione o periodo para processar a frequencia mensal</p>
+    <h1>Gerenciar folha</h1>
+  </section>
+
+  <form class="period-form" method="post">
+    {% csrf_token %}
+    <div class="form-field">
+      <label for="{{ form.mes.id_for_label }}">Mes</label>
+      {{ form.mes }}
+    </div>
+    <div class="form-field">
+      <label for="{{ form.ano.id_for_label }}">Ano</label>
+      {{ form.ano }}
+    </div>
+    <button type="submit">Processar folha</button>
+  </form>
+{% endblock %}

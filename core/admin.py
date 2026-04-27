@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Escola, PerfilUsuario, Servidor
+from .models import Escola, Frequencia, PerfilUsuario, Servidor
 
 
 @admin.register(Escola)
@@ -24,3 +24,11 @@ class ServidorAdmin(admin.ModelAdmin):
     list_filter = ('escola', 'cargo', 'vinculo', 'ativo')
     search_fields = ('nome', 'cpf', 'rg', 'escola__nome')
     autocomplete_fields = ('escola',)
+
+
+@admin.register(Frequencia)
+class FrequenciaAdmin(admin.ModelAdmin):
+    list_display = ('servidor', 'mes', 'ano', 'faltas', 'observacoes')
+    list_filter = ('ano', 'mes', 'servidor__escola')
+    search_fields = ('servidor__nome', 'servidor__cpf')
+    autocomplete_fields = ('servidor',)

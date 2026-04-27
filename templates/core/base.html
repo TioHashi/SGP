@@ -13,8 +13,8 @@
     <nav class="main-nav" aria-label="Principal">
       <a href="{% url 'dashboard' %}">Inicio</a>
       <a href="{% url 'servidor_lista' %}">Servidores</a>
-      <a href="#">Folha</a>
-      <a href="#">Relatorios</a>
+      <a href="{% url 'folha_selecionar' %}">Folha</a>
+      <a href="{% url 'relatorios' %}">Relatorios</a>
     </nav>
     <form method="post" action="{% url 'logout' %}">
       {% csrf_token %}

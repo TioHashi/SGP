@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+
+{% block title %}SGP - Relatorio {{ nome_mes }}{% endblock %}
+
+{% block content %}
+  <section class="report-toolbar">
+    <a href="{% url 'relatorios' %}">Voltar</a>
+    <button type="button" onclick="window.print()">Imprimir</button>
+  </section>
+
+  <section class="print-sheet">
+    <header class="print-header">
+      <div>
+        <strong>SGP</strong>
+        <span>Sistema de Gestao de Pessoas</span>
+      </div>
+      <div>
+        <strong>Frequencia Mensal</strong>
+        <span>{{ nome_mes }} / {{ ano }}</span>
+      </div>
+      <div>
+        <strong>Unidade</strong>
+        <span>{% if escola %}{{ escola.nome }}{% else %}Todas as escolas{% endif %}</span>
+      </div>
+    </header>
+
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th>N.</th>
+          <th>Nome completo</th>
+          <th>Vinculo</th>
+          <th>Cargo</th>
+          <th>Funcao</th>
+          <th>Formacao</th>
+          <th>C.H.</th>
+          <th>Faltas</th>
+          <th>Observacoes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for linha in linhas %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ linha.servidor.nome }}</td>
+            <td>{{ linha.servidor.vinculo|default:'' }}</td>
+            <td>{{ linha.servidor.cargo|default:'' }}</td>
+            <td>{{ linha.servidor.funcao|default:'' }}</td>
+            <td>{{ linha.servidor.escolaridade|default:'' }}</td>
+            <td>{{ linha.servidor.carga_horaria|default:'' }}</td>
+            <td>{{ linha.frequencia.faltas|default:'' }}</td>
+            <td>{{ linha.frequencia.get_observacoes_display|default:'' }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="9">Nenhum servidor encontrado.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

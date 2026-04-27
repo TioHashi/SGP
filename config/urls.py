@@ -17,7 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
-from core.views import dashboard, servidor_criar, servidor_editar, servidor_lista
+from core.views import (
+    dashboard,
+    folha_mensal,
+    folha_selecionar,
+    relatorio_folha,
+    relatorios,
+    servidor_criar,
+    servidor_editar,
+    servidor_lista,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,4 +36,8 @@ urlpatterns = [
     path('servidores/', servidor_lista, name='servidor_lista'),
     path('servidores/novo/', servidor_criar, name='servidor_criar'),
     path('servidores/<int:pk>/editar/', servidor_editar, name='servidor_editar'),
+    path('folha/', folha_selecionar, name='folha_selecionar'),
+    path('folha/<str:mes>/<str:ano>/', folha_mensal, name='folha_mensal'),
+    path('relatorios/', relatorios, name='relatorios'),
+    path('relatorios/folha/<str:mes>/<str:ano>/', relatorio_folha, name='relatorio_folha'),
 ]

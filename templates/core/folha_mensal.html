@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+
+{% block title %}SGP - Folha {{ nome_mes }}{% endblock %}
+
+{% block content %}
+  <section class="page-heading split-heading">
+    <div>
+      <p>Frequencia mensal - {{ ano }}</p>
+      <h1>{{ nome_mes }}</h1>
+    </div>
+    <a class="primary-link" href="{% url 'relatorio_folha' mes ano %}">Ver relatorio</a>
+  </section>
+
+  <form method="post">
+    {% csrf_token %}
+    <section class="table-card frequency-table">
+      <table>
+        <thead>
+          <tr>
+            <th>N.</th>
+            <th>Nome completo</th>
+            <th>Vinculo</th>
+            <th>Cargo</th>
+            <th>Funcao</th>
+            <th>Formacao</th>
+            <th>Carga horaria</th>
+            <th>Faltas</th>
+            <th>Observacoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for linha in linhas %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ linha.servidor.nome }}</td>
+              <td>{{ linha.servidor.vinculo|default:'-' }}</td>
+              <td>{{ linha.servidor.cargo|default:'-' }}</td>
+              <td>{{ linha.servidor.funcao|default:'-' }}</td>
+              <td>{{ linha.servidor.escolaridade|default:'-' }}</td>
+              <td>{{ linha.servidor.carga_horaria|default:'-' }}</td>
+              <td>
+                <input class="mini-field" type="number" min="0" max="31" name="faltas_{{ linha.servidor.pk }}" value="{{ linha.frequencia.faltas|default:0 }}">
+              </td>
+              <td>
+                <select class="mini-select" name="observacoes_{{ linha.servidor.pk }}">
+                  {% for value,label in obs_choices %}
+                    <option value="{{ value }}" {% if linha.frequencia.observacoes == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9">Nenhum servidor ativo encontrado para esta escola.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <div class="form-actions bottom-actions">
+      <a href="{% url 'folha_selecionar' %}">Voltar</a>
+      <button type="submit">Salvar folha</button>
+    </div>
+  </form>
+{% endblock %}

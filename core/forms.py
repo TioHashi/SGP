@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Servidor
+from .models import Frequencia, Servidor
 
 
 class ServidorForm(forms.ModelForm):
@@ -64,3 +64,13 @@ class ServidorForm(forms.ModelForm):
             instance.save()
             self.save_m2m()
         return instance
+
+
+class FolhaFiltroForm(forms.Form):
+    mes = forms.ChoiceField(choices=Frequencia.MESES_CHOICES)
+    ano = forms.ChoiceField(choices=Frequencia.ANO_CHOICES)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault('class', 'field-control')
