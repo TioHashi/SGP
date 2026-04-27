@@ -3,30 +3,115 @@
 {% block title %}SGP - {{ titulo }}{% endblock %}
 
 {% block content %}
-  <section class="page-heading split-heading">
+  <section class="server-form-hero">
     <div>
-      <p>Dados funcionais e pessoais</p>
+      <p>Cadastro de servidor</p>
       <h1>{{ titulo }}</h1>
+      <span>Dados pessoais, lotação e informações funcionais em uma tela organizada.</span>
     </div>
     {% if servidor and request.user.is_superuser %}
       <a class="primary-link" href="{% url 'servidor_transferir' servidor.pk %}">Transferir escola</a>
     {% endif %}
   </section>
 
-  <form class="data-form" method="post">
+  <form class="server-form" method="post">
     {% csrf_token %}
-    {% for field in form %}
-      <div class="form-field">
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}
-          <small>{{ field.errors|striptags }}</small>
-        {% endif %}
+
+    {% if form.non_field_errors %}
+      <div class="form-section full-span">
+        <div class="alert">{{ form.non_field_errors|striptags }}</div>
       </div>
-    {% endfor %}
-    <div class="form-actions">
+    {% endif %}
+
+    <section class="form-section">
+      <header>
+        <span>01</span>
+        <div>
+          <h2>Identificação</h2>
+          <p>Dados principais usados para localizar o servidor.</p>
+        </div>
+      </header>
+      <div class="section-grid">
+        {% if form.escola %}{% include 'core/partials/form_field.html' with field=form.escola span='wide' %}{% endif %}
+        {% include 'core/partials/form_field.html' with field=form.nome span='wide' %}
+        {% include 'core/partials/form_field.html' with field=form.cpf %}
+        {% include 'core/partials/form_field.html' with field=form.rg %}
+        {% include 'core/partials/form_field.html' with field=form.sexo %}
+        {% include 'core/partials/form_field.html' with field=form.data_nascimento %}
+        {% include 'core/partials/form_field.html' with field=form.telefone %}
+        {% include 'core/partials/form_field.html' with field=form.email span='wide' %}
+      </div>
+    </section>
+
+    <section class="form-section">
+      <header>
+        <span>02</span>
+        <div>
+          <h2>Endereço</h2>
+          <p>Localização residencial e contato territorial.</p>
+        </div>
+      </header>
+      <div class="section-grid">
+        {% include 'core/partials/form_field.html' with field=form.logradouro span='wide' %}
+        {% include 'core/partials/form_field.html' with field=form.numero %}
+        {% include 'core/partials/form_field.html' with field=form.bairro %}
+        {% include 'core/partials/form_field.html' with field=form.zona %}
+        {% include 'core/partials/form_field.html' with field=form.municipio %}
+        {% include 'core/partials/form_field.html' with field=form.estado %}
+        {% include 'core/partials/form_field.html' with field=form.cep %}
+      </div>
+    </section>
+
+    <section class="form-section">
+      <header>
+        <span>03</span>
+        <div>
+          <h2>Formação</h2>
+          <p>Escolaridade e trajetória acadêmica.</p>
+        </div>
+      </header>
+      <div class="section-grid">
+        {% include 'core/partials/form_field.html' with field=form.escolaridade %}
+        {% include 'core/partials/form_field.html' with field=form.formacao %}
+        {% include 'core/partials/form_field.html' with field=form.instituicao span='wide' %}
+      </div>
+    </section>
+
+    <section class="form-section">
+      <header>
+        <span>04</span>
+        <div>
+          <h2>Lotação e função</h2>
+          <p>Cargo, função exercida, vínculo e carga horária.</p>
+        </div>
+      </header>
+      <div class="section-grid">
+        {% include 'core/partials/form_field.html' with field=form.cargo %}
+        {% include 'core/partials/form_field.html' with field=form.funcao %}
+        {% include 'core/partials/form_field.html' with field=form.vinculo %}
+        {% include 'core/partials/form_field.html' with field=form.carga_horaria %}
+        {% include 'core/partials/form_field.html' with field=form.ativo %}
+      </div>
+    </section>
+
+    <section class="form-section">
+      <header>
+        <span>05</span>
+        <div>
+          <h2>Datas</h2>
+          <p>Histórico de entrada, início e saída.</p>
+        </div>
+      </header>
+      <div class="section-grid">
+        {% include 'core/partials/form_field.html' with field=form.data_admissao %}
+        {% include 'core/partials/form_field.html' with field=form.data_inicio %}
+        {% include 'core/partials/form_field.html' with field=form.data_saida %}
+      </div>
+    </section>
+
+    <div class="form-actions sticky-actions">
       <a href="{% url 'servidor_lista' %}">Cancelar</a>
-      <button type="submit">Salvar</button>
+      <button type="submit">Salvar servidor</button>
     </div>
   </form>
 {% endblock %}

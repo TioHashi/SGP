@@ -419,16 +419,6 @@ td a {
   color: var(--accent);
 }
 
-.data-form {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  padding: 20px;
-}
-
 .form-field {
   display: grid;
   gap: 6px;
@@ -453,11 +443,98 @@ td a {
   width: auto;
 }
 
+.server-form-hero {
+  align-items: end;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--brand);
+  border-radius: 8px;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding: 22px;
+}
+
+.server-form-hero p,
+.server-form-hero span {
+  color: var(--muted);
+  margin: 0;
+}
+
+.server-form-hero h1 {
+  margin: 6px 0;
+}
+
+.server-form {
+  display: grid;
+  gap: 16px;
+}
+
+.form-section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.form-section header {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+}
+
+.form-section header span {
+  background: rgba(30, 95, 116, 0.1);
+  border: 1px solid rgba(30, 95, 116, 0.14);
+  border-radius: 50%;
+  color: var(--brand);
+  display: grid;
+  flex: 0 0 42px;
+  font-weight: 800;
+  height: 42px;
+  place-items: center;
+}
+
+.form-section h2 {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.form-section p {
+  color: var(--muted);
+  margin: 3px 0 0;
+}
+
+.section-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.section-grid .wide {
+  grid-column: span 2;
+}
+
+.full-span {
+  grid-column: 1 / -1;
+}
+
 .form-actions {
   align-items: center;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.sticky-actions {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 20px;
 }
 
 .form-actions a {
@@ -728,8 +805,17 @@ td a {
     flex-direction: column;
   }
 
-  .data-form {
+  .section-grid {
     grid-template-columns: 1fr;
+  }
+
+  .server-form-hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .section-grid .wide {
+    grid-column: auto;
   }
 
   .period-form,

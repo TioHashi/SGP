@@ -32,9 +32,6 @@ class ServidorForm(forms.ModelForm):
             'data_admissao',
             'data_inicio',
             'data_saida',
-            'banco',
-            'agencia',
-            'conta',
             'ativo',
         ]
         widgets = {
@@ -42,6 +39,15 @@ class ServidorForm(forms.ModelForm):
             'data_admissao': forms.DateInput(attrs={'type': 'date'}),
             'data_inicio': forms.DateInput(attrs={'type': 'date'}),
             'data_saida': forms.DateInput(attrs={'type': 'date'}),
+        }
+        labels = {
+            'formacao': 'Formação',
+            'instituicao': 'Instituição',
+            'funcao': 'Função',
+            'carga_horaria': 'Carga horária',
+            'data_admissao': 'Data de admissão',
+            'data_inicio': 'Data de início',
+            'data_saida': 'Data de saída',
         }
 
     def __init__(self, *args, user=None, **kwargs):
