@@ -449,7 +449,8 @@ td a {
 
 .yellow-title {
   align-items: center;
-  background: #fff900;
+  background: #fff;
+  border: 1px solid #000;
   display: grid;
   font-size: 14px;
   gap: 6px;
@@ -469,11 +470,14 @@ td a {
 .print-table td {
   border: 1px solid #000;
   color: #000;
-  font-size: 10px;
-  line-height: 1.15;
+  font-size: 9px;
+  line-height: 1.08;
   padding: 4px 5px;
   text-align: center;
   vertical-align: middle;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .print-table th {
@@ -495,6 +499,14 @@ td a {
 
 .observation-cell {
   font-weight: 800;
+}
+
+.print-table td:nth-child(3),
+.print-table td:nth-child(4),
+.print-table td:nth-child(5),
+.print-table td:nth-child(6),
+.print-table td:nth-child(10) {
+  text-transform: uppercase;
 }
 
 @media print {
