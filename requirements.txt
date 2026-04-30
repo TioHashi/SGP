@@ -2,5 +2,6 @@ Django==5.2.13
 firebase-admin==6.9.0
 google-cloud-storage==3.4.1
 gunicorn==23.0.0
+python-dotenv==1.2.1
 reportlab==4.4.5
 whitenoise==6.11.0

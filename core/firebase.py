@@ -11,7 +11,7 @@ _firebase_app = None
 
 
 def firebase_is_configured():
-    return settings.FIREBASE_ENABLED and settings.FIREBASE_STORAGE_BUCKET
+    return settings.FIREBASE_ENABLED and settings.FIREBASE_PROJECT_ID
 
 
 def get_firebase_app():
@@ -49,7 +49,7 @@ def firestore_client():
 
 def storage_bucket():
     app = get_firebase_app()
-    if app is None:
+    if app is None or not settings.FIREBASE_STORAGE_BUCKET:
         return None
 
     from firebase_admin import storage
