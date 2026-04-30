@@ -17,6 +17,7 @@
           <th>Ultima atualizacao</th>
           <th></th>
           <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -27,10 +28,11 @@
             <td>{{ folha.atualizado_em|date:'d/m/Y H:i' }}</td>
             <td><a href="{% url 'relatorio_folha' folha.mes folha.ano %}">Abrir</a></td>
             <td><a href="{% url 'folha_mensal' folha.mes folha.ano %}">Editar folha</a></td>
+            <td><a href="{% url 'relatorio_folha_pdf' folha.mes folha.ano %}" target="_blank">PDF</a></td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="5">Nenhuma folha salva ainda.</td>
+            <td colspan="6">Nenhuma folha salva ainda.</td>
           </tr>
         {% endfor %}
       </tbody>

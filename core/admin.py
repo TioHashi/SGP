@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Escola, Frequencia, PerfilUsuario, Servidor
+from .models import Escola, FolhaPdf, Frequencia, PerfilUsuario, Servidor
 
 
 @admin.register(Escola)
@@ -32,3 +32,11 @@ class FrequenciaAdmin(admin.ModelAdmin):
     list_filter = ('ano', 'mes', 'servidor__escola')
     search_fields = ('servidor__nome', 'servidor__cpf')
     autocomplete_fields = ('servidor',)
+
+
+@admin.register(FolhaPdf)
+class FolhaPdfAdmin(admin.ModelAdmin):
+    list_display = ('nome_arquivo', 'escola', 'mes', 'ano', 'tamanho_bytes', 'criado_em')
+    list_filter = ('ano', 'mes', 'escola')
+    search_fields = ('nome_arquivo', 'storage_path', 'escola__nome')
+    autocomplete_fields = ('escola', 'criado_por')

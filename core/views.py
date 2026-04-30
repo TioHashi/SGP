@@ -1,10 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Max
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.text import slugify
 
 from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
-from .models import Escola, Frequencia, Servidor
+from .firebase import upload_pdf
+from .models import Escola, FolhaPdf, Frequencia, Servidor
+from .pdfs import folha_pdf_bytes
 
 
 def escola_do_usuario(user):
@@ -212,3 +216,35 @@ def relatorio_folha(request, mes, ano):
         'escola': escola_do_usuario(request.user),
     }
     return render(request, 'core/relatorio_folha.html', contexto)
+
+
+@login_required
+def relatorio_folha_pdf(request, mes, ano):
+    servidores = list(servidores_permitidos(request.user).filter(ativo=True).order_by('nome'))
+    frequencias = {
+        frequencia.servidor_id: frequencia
+        for frequencia in Frequencia.objects.filter(servidor__in=servidores, mes=mes, ano=ano)
+    }
+    linhas = [{'servidor': servidor, 'frequencia': frequencias.get(servidor.pk)} for servidor in servidores]
+    escola = escola_do_usuario(request.user)
+    nome_mes = dict(Frequencia.MESES_CHOICES).get(mes, mes)
+    escola_nome = escola.nome if escola else 'semed'
+    nome_arquivo = f'folha-{slugify(escola_nome)}-{slugify(nome_mes)}-{ano}.pdf'
+    storage_path = f'folhas/{ano}/{mes}/{nome_arquivo}'
+    pdf = folha_pdf_bytes(linhas, mes, ano, escola)
+
+    enviado = upload_pdf(storage_path, pdf)
+    if enviado:
+        FolhaPdf.objects.create(
+            mes=mes,
+            ano=ano,
+            escola=escola,
+            storage_path=storage_path,
+            nome_arquivo=nome_arquivo,
+            tamanho_bytes=len(pdf),
+            criado_por=request.user,
+        )
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{nome_arquivo}"'
+    return response

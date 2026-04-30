@@ -161,3 +161,23 @@ class Frequencia(models.Model):
 
     def __str__(self):
         return f'{self.servidor.nome} - {self.get_mes_display()}/{self.ano}'
+
+
+class FolhaPdf(models.Model):
+    mes = models.CharField(max_length=2, choices=Frequencia.MESES_CHOICES)
+    ano = models.CharField(max_length=4, choices=Frequencia.ANO_CHOICES)
+    escola = models.ForeignKey(Escola, on_delete=models.PROTECT, null=True, blank=True)
+    storage_path = models.CharField(max_length=500)
+    nome_arquivo = models.CharField(max_length=180)
+    tamanho_bytes = models.PositiveIntegerField(default=0)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'PDF da folha'
+        verbose_name_plural = 'PDFs das folhas'
+
+    def __str__(self):
+        escola = self.escola.nome if self.escola else 'SEMED'
+        return f'{self.nome_arquivo} - {escola}'
