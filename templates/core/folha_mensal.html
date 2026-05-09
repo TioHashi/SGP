@@ -17,36 +17,34 @@
       <div class="frequency-editor-head">
         <span>N.</span>
         <span>Servidor</span>
-        <span>Informações funcionais</span>
-        <span>Lançamento</span>
+        <span>Escola</span>
+        <span>Vínculo</span>
+        <span>Cargo</span>
+        <span>Função</span>
+        <span>Formação</span>
+        <span>Carga</span>
+        <span>Faltas</span>
+        <span>Observações</span>
       </div>
       {% for linha in linhas %}
         <article class="frequency-row">
           <div class="frequency-index">{{ forloop.counter }}</div>
-          <div class="frequency-person">
-            <strong>{{ linha.servidor.nome }}</strong>
-            <span>{{ linha.servidor.escola.nome }}</span>
+          <div class="frequency-name" title="{{ linha.servidor.nome }}">{{ linha.servidor.nome }}</div>
+          <div class="frequency-school" title="{{ linha.servidor.escola.nome }}">{{ linha.servidor.escola.nome }}</div>
+          <div title="{{ linha.servidor.vinculo|default:'-' }}">{{ linha.servidor.vinculo|default:'-' }}</div>
+          <div title="{{ linha.servidor.cargo|default:'-' }}">{{ linha.servidor.cargo|default:'-' }}</div>
+          <div title="{{ linha.servidor.funcao|default:'-' }}">{{ linha.servidor.funcao|default:'-' }}</div>
+          <div title="{{ linha.servidor.escolaridade|default:'-' }}">{{ linha.servidor.escolaridade|default:'-' }}</div>
+          <div>{{ linha.servidor.carga_horaria|default:'-' }}</div>
+          <div>
+            <input class="mini-field" type="number" min="0" max="31" name="faltas_{{ linha.servidor.pk }}" value="{{ linha.frequencia.faltas|default:0 }}">
           </div>
-          <div class="frequency-meta">
-            <div><span>Vínculo</span><strong>{{ linha.servidor.vinculo|default:'-' }}</strong></div>
-            <div><span>Cargo</span><strong>{{ linha.servidor.cargo|default:'-' }}</strong></div>
-            <div><span>Função</span><strong>{{ linha.servidor.funcao|default:'-' }}</strong></div>
-            <div><span>Formação</span><strong>{{ linha.servidor.escolaridade|default:'-' }}</strong></div>
-            <div><span>Carga horária</span><strong>{{ linha.servidor.carga_horaria|default:'-' }}</strong></div>
-          </div>
-          <div class="frequency-inputs">
-            <label>
-              <span>Faltas</span>
-              <input class="mini-field" type="number" min="0" max="31" name="faltas_{{ linha.servidor.pk }}" value="{{ linha.frequencia.faltas|default:0 }}">
-            </label>
-            <label>
-              <span>Observações</span>
-              <select class="mini-select" name="observacoes_{{ linha.servidor.pk }}">
-                {% for value,label in obs_choices %}
-                  <option value="{{ value }}" {% if linha.observacao_sugerida == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </label>
+          <div>
+            <select class="mini-select" name="observacoes_{{ linha.servidor.pk }}">
+              {% for value,label in obs_choices %}
+                <option value="{{ value }}" {% if linha.observacao_sugerida == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
           </div>
         </article>
       {% empty %}
