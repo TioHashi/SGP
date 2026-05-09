@@ -16,6 +16,31 @@
       <a href="{% url 'folha_selecionar' %}">Folha</a>
       <a href="{% url 'relatorios' %}">Relatorios</a>
     </nav>
+    <details class="alert-menu">
+      <summary aria-label="Alertas">
+        <span>Alertas</span>
+        {% if alertas_total %}<strong>{{ alertas_total }}</strong>{% endif %}
+      </summary>
+      <div class="alert-dropdown">
+        {% for alerta in alertas_sgp %}
+          <article>
+            <b>{{ alerta.titulo }}</b>
+            <p>{{ alerta.texto }}</p>
+            {% if alerta.transferencia %}
+              <form method="post" action="{% url 'transferencia_aceitar' alerta.transferencia.pk %}">
+                {% csrf_token %}
+                <button type="submit">Aceitar transferência</button>
+              </form>
+            {% endif %}
+          </article>
+        {% empty %}
+          <article>
+            <b>Sem alertas</b>
+            <p>Nenhuma pendência no momento.</p>
+          </article>
+        {% endfor %}
+      </div>
+    </details>
     <form method="post" action="{% url 'logout' %}">
       {% csrf_token %}
       <button class="logout-button" type="submit">Sair</button>

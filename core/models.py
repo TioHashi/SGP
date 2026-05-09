@@ -67,6 +67,14 @@ class Servidor(models.Model):
         ('Mediadora Social', 'Mediadora Social'),
     ]
 
+    MOTIVO_INATIVO_CHOICES = [
+        ('', ''),
+        ('Licenca', 'Licença'),
+        ('Aposentado', 'Aposentado'),
+        ('Obito', 'Óbito'),
+        ('Outros', 'Outros'),
+    ]
+
     escola = models.ForeignKey(Escola, on_delete=models.PROTECT, related_name='servidores')
     nome = models.CharField(max_length=255, verbose_name='Nome completo')
     sexo = models.CharField(max_length=50, choices=SEXO_CHOICES, blank=True)
@@ -96,6 +104,7 @@ class Servidor(models.Model):
     agencia = models.CharField(max_length=20, verbose_name='Agencia', blank=True)
     conta = models.CharField(max_length=20, blank=True)
     ativo = models.BooleanField(default=True)
+    motivo_inativo = models.CharField(max_length=30, choices=MOTIVO_INATIVO_CHOICES, blank=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
@@ -106,6 +115,31 @@ class Servidor(models.Model):
 
     def __str__(self):
         return self.nome
+
+
+class TransferenciaServidor(models.Model):
+    STATUS_CHOICES = [
+        ('pendente', 'Pendente'),
+        ('aceita', 'Aceita'),
+        ('recusada', 'Recusada'),
+    ]
+
+    servidor = models.ForeignKey(Servidor, on_delete=models.CASCADE, related_name='transferencias')
+    escola_origem = models.ForeignKey(Escola, on_delete=models.PROTECT, related_name='transferencias_enviadas')
+    escola_destino = models.ForeignKey(Escola, on_delete=models.PROTECT, related_name='transferencias_recebidas')
+    solicitado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='transferencias_solicitadas')
+    respondido_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='transferencias_respondidas')
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='pendente')
+    criado_em = models.DateTimeField(auto_now_add=True)
+    respondido_em = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'transferência de servidor'
+        verbose_name_plural = 'transferências de servidores'
+
+    def __str__(self):
+        return f'{self.servidor.nome}: {self.escola_origem.nome} -> {self.escola_destino.nome}'
 
 
 class Frequencia(models.Model):

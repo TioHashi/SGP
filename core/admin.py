@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Escola, FolhaPdf, Frequencia, PerfilUsuario, Servidor
+from .models import Escola, FolhaPdf, Frequencia, PerfilUsuario, Servidor, TransferenciaServidor
 
 
 @admin.register(Escola)
@@ -20,8 +20,8 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
 
 @admin.register(Servidor)
 class ServidorAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'cpf', 'escola', 'cargo', 'vinculo', 'ativo')
-    list_filter = ('escola', 'cargo', 'vinculo', 'ativo')
+    list_display = ('nome', 'cpf', 'escola', 'cargo', 'vinculo', 'ativo', 'motivo_inativo')
+    list_filter = ('escola', 'cargo', 'vinculo', 'ativo', 'motivo_inativo')
     search_fields = ('nome', 'cpf', 'rg', 'escola__nome')
     autocomplete_fields = ('escola',)
 
@@ -40,3 +40,11 @@ class FolhaPdfAdmin(admin.ModelAdmin):
     list_filter = ('ano', 'mes', 'escola')
     search_fields = ('nome_arquivo', 'storage_path', 'escola__nome')
     autocomplete_fields = ('escola', 'criado_por')
+
+
+@admin.register(TransferenciaServidor)
+class TransferenciaServidorAdmin(admin.ModelAdmin):
+    list_display = ('servidor', 'escola_origem', 'escola_destino', 'status', 'criado_em', 'respondido_em')
+    list_filter = ('status', 'escola_origem', 'escola_destino')
+    search_fields = ('servidor__nome', 'escola_origem__nome', 'escola_destino__nome')
+    autocomplete_fields = ('servidor', 'escola_origem', 'escola_destino', 'solicitado_por', 'respondido_por')

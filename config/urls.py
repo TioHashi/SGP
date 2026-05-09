@@ -23,11 +23,13 @@ from core.views import (
     folha_selecionar,
     relatorio_folha,
     relatorio_folha_pdf,
+    servidor_ficha,
     relatorios,
     servidor_criar,
     servidor_editar,
     servidor_lista,
     servidor_transferir,
+    transferencia_aceitar,
 )
 
 urlpatterns = [
@@ -37,8 +39,10 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('servidores/', servidor_lista, name='servidor_lista'),
     path('servidores/novo/', servidor_criar, name='servidor_criar'),
+    path('servidores/<int:pk>/ficha/', servidor_ficha, name='servidor_ficha'),
     path('servidores/<int:pk>/editar/', servidor_editar, name='servidor_editar'),
     path('servidores/<int:pk>/transferir/', servidor_transferir, name='servidor_transferir'),
+    path('transferencias/<int:pk>/aceitar/', transferencia_aceitar, name='transferencia_aceitar'),
     path('folha/', folha_selecionar, name='folha_selecionar'),
     path('folha/<str:mes>/<str:ano>/', folha_mensal, name='folha_mensal'),
     path('relatorios/', relatorios, name='relatorios'),

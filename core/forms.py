@@ -4,6 +4,12 @@ from .models import Escola, Frequencia, Servidor
 
 
 class ServidorForm(forms.ModelForm):
+    status_servidor = forms.ChoiceField(
+        choices=[('ativo', 'Ativo'), ('inativo', 'Inativo')],
+        label='Status',
+        widget=forms.RadioSelect,
+    )
+
     class Meta:
         model = Servidor
         fields = [
@@ -32,7 +38,7 @@ class ServidorForm(forms.ModelForm):
             'data_admissao',
             'data_inicio',
             'data_saida',
-            'ativo',
+            'motivo_inativo',
         ]
         widgets = {
             'data_nascimento': forms.DateInput(attrs={'type': 'date'}),
@@ -48,20 +54,37 @@ class ServidorForm(forms.ModelForm):
             'data_admissao': 'Data de admissão',
             'data_inicio': 'Data de início',
             'data_saida': 'Data de saída',
+            'motivo_inativo': 'Motivo da inatividade',
         }
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
+        self.fields['status_servidor'].initial = 'ativo' if self.instance.ativo else 'inativo'
 
         for field in self.fields.values():
             field.widget.attrs.setdefault('class', 'field-control')
 
+        self.fields['status_servidor'].widget.attrs['class'] = 'status-radio-group'
+
         if user and not user.is_superuser:
             self.fields.pop('escola')
 
+    def clean(self):
+        cleaned_data = super().clean()
+        status_servidor = cleaned_data.get('status_servidor')
+        motivo_inativo = cleaned_data.get('motivo_inativo')
+        if status_servidor == 'inativo' and not motivo_inativo:
+            self.add_error('motivo_inativo', 'Informe o motivo quando o servidor estiver inativo.')
+        if status_servidor == 'ativo':
+            cleaned_data['motivo_inativo'] = ''
+        return cleaned_data
+
     def save(self, commit=True):
         instance = super().save(commit=False)
+        instance.ativo = self.cleaned_data.get('status_servidor') == 'ativo'
+        if instance.ativo:
+            instance.motivo_inativo = ''
         if self.user and not self.user.is_superuser:
             perfil = getattr(self.user, 'perfilusuario', None)
             if perfil and perfil.escola:

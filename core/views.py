@@ -3,11 +3,12 @@ from django.contrib import messages
 from django.db.models import Count, Max
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.text import slugify
 
 from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
 from .firebase import upload_pdf
-from .models import Escola, FolhaPdf, Frequencia, Servidor
+from .models import Escola, FolhaPdf, Frequencia, Servidor, TransferenciaServidor
 from .pdfs import folha_pdf_bytes
 
 
@@ -62,8 +63,14 @@ def dashboard(request):
         .values('cargo')
         .exclude(cargo='')
         .annotate(total=Count('id'))
-        .order_by('-total', 'cargo')[:6]
+        .order_by('-total', 'cargo')[:10]
     )
+    total_ativos = servidores_ativos.count() or 1
+    status_resumo = {
+        'ativos': servidores_ativos.count(),
+        'inativos': servidores.filter(ativo=False).count(),
+        'percentual_ativos': round((servidores_ativos.count() / total_ativos) * 100, 1),
+    }
 
     total_vinculos = sum(item['total'] for item in vinculos) or 1
     vinculo_resumo = [
@@ -74,6 +81,7 @@ def dashboard(request):
         }
         for item in vinculos
     ]
+    vinculos_por_nome = {item['label']: item['total'] for item in vinculo_resumo}
 
     dashboard_data = {
         'vinculos': {
@@ -84,6 +92,10 @@ def dashboard(request):
             'labels': [item['funcao'] or 'Nao informado' for item in funcoes],
             'data': [item['total'] for item in funcoes],
         },
+        'cargos': {
+            'labels': [item['cargo'] or 'Nao informado' for item in cargos],
+            'data': [item['total'] for item in cargos],
+        },
     }
 
     contexto = {
@@ -92,6 +104,9 @@ def dashboard(request):
         'vinculo_resumo': vinculo_resumo,
         'funcoes': funcoes,
         'cargos': cargos,
+        'status_resumo': status_resumo,
+        'efetivos_total': vinculos_por_nome.get('Efetivo', 0),
+        'temporarios_total': vinculos_por_nome.get('Temporario', 0),
         'dashboard_data': dashboard_data,
     }
     return render(request, 'core/dashboard.html', contexto)
@@ -104,6 +119,12 @@ def servidor_lista(request):
     if busca:
         servidores = servidores.filter(nome__icontains=busca)
     return render(request, 'core/servidor_lista.html', {'servidores': servidores, 'busca': busca})
+
+
+@login_required
+def servidor_ficha(request, pk):
+    servidor = get_object_or_404(servidores_permitidos(request.user), pk=pk)
+    return render(request, 'core/servidor_ficha.html', {'servidor': servidor})
 
 
 @login_required
@@ -129,20 +150,44 @@ def servidor_editar(request, pk):
 
 @login_required
 def servidor_transferir(request, pk):
-    if not request.user.is_superuser:
-        messages.error(request, 'Apenas o superusuario pode transferir servidores entre escolas.')
-        return redirect('servidor_lista')
-
-    servidor = get_object_or_404(Servidor.objects.select_related('escola'), pk=pk)
+    servidor = get_object_or_404(servidores_permitidos(request.user), pk=pk)
     form = TransferirServidorForm(request.POST or None, servidor=servidor)
     if request.method == 'POST' and form.is_valid():
-        origem = servidor.escola
-        servidor.escola = form.cleaned_data['escola_destino']
-        servidor.save(update_fields=['escola', 'atualizado_em'])
-        messages.success(request, f'{servidor.nome} transferido de {origem.nome} para {servidor.escola.nome}.')
+        destino = form.cleaned_data['escola_destino']
+        TransferenciaServidor.objects.create(
+            servidor=servidor,
+            escola_origem=servidor.escola,
+            escola_destino=destino,
+            solicitado_por=request.user,
+        )
+        messages.success(request, f'Solicitacao enviada para {destino.nome}. A escola destino precisa aceitar a transferencia.')
         return redirect('servidor_lista')
 
     return render(request, 'core/servidor_transferir.html', {'form': form, 'servidor': servidor})
+
+
+@login_required
+def transferencia_aceitar(request, pk):
+    transferencia = get_object_or_404(
+        TransferenciaServidor.objects.select_related('servidor', 'escola_destino', 'escola_origem'),
+        pk=pk,
+        status='pendente',
+    )
+    escola = escola_do_usuario(request.user)
+    if not request.user.is_superuser and escola != transferencia.escola_destino:
+        messages.error(request, 'Esta transferencia deve ser aceita pela escola de destino.')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        servidor = transferencia.servidor
+        servidor.escola = transferencia.escola_destino
+        servidor.save(update_fields=['escola', 'atualizado_em'])
+        transferencia.status = 'aceita'
+        transferencia.respondido_por = request.user
+        transferencia.respondido_em = timezone.now()
+        transferencia.save(update_fields=['status', 'respondido_por', 'respondido_em'])
+        messages.success(request, f'{servidor.nome} foi transferido para {transferencia.escola_destino.nome}.')
+    return redirect('dashboard')
 
 
 @login_required

@@ -9,9 +9,12 @@
     <div>
       <p>Bem-vindo, {{ request.user.username }}</p>
       <h1>{% if escola_atual %}{{ escola_atual.nome }}{% else %}Painel geral do SGP{% endif %}</h1>
-      <span>Os indicadores abaixo usam somente os servidores que este usuario pode acessar.</span>
+      <span>Indicadores filtrados automaticamente pelo acesso da escola.</span>
     </div>
-    <a class="primary-link" href="{% url 'servidor_criar' %}">Novo servidor</a>
+    <div class="hero-actions">
+      <a class="primary-link" href="{% url 'servidor_criar' %}">Novo servidor</a>
+      <a class="toolbar-button" href="{% url 'folha_selecionar' %}">Abrir folha</a>
+    </div>
   </section>
 
   <section class="card-grid dashboard-cards">
@@ -22,6 +25,25 @@
         <p>{{ card.hint }}</p>
       </article>
     {% endfor %}
+  </section>
+
+  <section class="dashboard-strip">
+    <article>
+      <span>Efetivos</span>
+      <strong>{{ efetivos_total }}</strong>
+    </article>
+    <article>
+      <span>Temporários</span>
+      <strong>{{ temporarios_total }}</strong>
+    </article>
+    <article>
+      <span>Ativos</span>
+      <strong>{{ status_resumo.ativos }}</strong>
+    </article>
+    <article>
+      <span>Inativos</span>
+      <strong>{{ status_resumo.inativos }}</strong>
+    </article>
   </section>
 
   <section class="dashboard-layout">
@@ -95,6 +117,27 @@
     </article>
   </section>
 
+  <section class="dashboard-layout">
+    <article class="chart-panel-app wide-panel">
+      <div class="panel-heading">
+        <div>
+          <p>Quadro funcional</p>
+          <h2>Servidores por cargo</h2>
+        </div>
+      </div>
+      <div class="chart-box chart-box-wide">
+        <canvas id="cargoChart"></canvas>
+      </div>
+    </article>
+
+    <article class="work-panel insight-panel">
+      <h2>Resumo útil</h2>
+      <p>{{ status_resumo.ativos }} servidor(es) ativo(s) disponíveis para a folha.</p>
+      <p>{{ status_resumo.inativos }} cadastro(s) inativo(s) fora da folha mensal.</p>
+      <p>{{ funcoes|length }} função(ões) e {{ cargos|length }} cargo(s) com servidores cadastrados.</p>
+    </article>
+  </section>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const dashboardData = JSON.parse(document.getElementById('dashboard-data').textContent);
@@ -123,6 +166,21 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    new Chart(document.getElementById('cargoChart'), {
+      type: 'bar',
+      data: {
+        labels: dashboardData.cargos.labels,
+        datasets: [{ label: 'Servidores', data: dashboardData.cargos.data, backgroundColor: '#2f9e44' }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
         plugins: { legend: { display: false } }
       }
     });

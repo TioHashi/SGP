@@ -90,7 +90,8 @@
         {% include 'core/partials/form_field.html' with field=form.funcao %}
         {% include 'core/partials/form_field.html' with field=form.vinculo %}
         {% include 'core/partials/form_field.html' with field=form.carga_horaria %}
-        {% include 'core/partials/form_field.html' with field=form.ativo %}
+        {% include 'core/partials/form_field.html' with field=form.status_servidor span='status-field' %}
+        {% include 'core/partials/form_field.html' with field=form.motivo_inativo %}
       </div>
     </section>
 
@@ -114,4 +115,16 @@
       <button type="submit">Salvar servidor</button>
     </div>
   </form>
+  <script>
+    const statusRadios = document.querySelectorAll('input[name="status_servidor"]');
+    const motivoField = document.querySelector('[name="motivo_inativo"]')?.closest('.form-field');
+    function syncMotivoInativo() {
+      const selected = document.querySelector('input[name="status_servidor"]:checked')?.value;
+      if (motivoField) {
+        motivoField.classList.toggle('is-hidden', selected !== 'inativo');
+      }
+    }
+    statusRadios.forEach((radio) => radio.addEventListener('change', syncMotivoInativo));
+    syncMotivoInativo();
+  </script>
 {% endblock %}

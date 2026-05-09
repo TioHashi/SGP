@@ -1,16 +1,23 @@
 from io import BytesIO
 
+from django.conf import settings
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from .models import Frequencia
 
 
 def text(value):
     return str(value or '')
+
+
+def image_or_empty(path, width, height):
+    if path.exists():
+        return Image(str(path), width=width, height=height)
+    return ''
 
 
 def folha_pdf_bytes(linhas, mes, ano, escola=None):
@@ -37,14 +44,39 @@ def folha_pdf_bytes(linhas, mes, ano, escola=None):
 
     nome_mes = dict(Frequencia.MESES_CHOICES).get(mes, mes)
     escola_nome = escola.nome if escola else 'SEMED'
+    static_dir = settings.BASE_DIR / 'static' / 'img'
+    semed_logo = image_or_empty(static_dir / 'semed-logo.png', 78, 78)
+    prefeitura_logo = image_or_empty(static_dir / 'prefeitura-logo.png', 72, 72)
+    faixa = image_or_empty(static_dir / 'faixa-ref.png', 700, 4)
+
+    header_table = Table(
+        [[
+            semed_logo,
+            [
+                Paragraph('ESTADO DO PARA', title_style),
+                Paragraph('PREFEITURA MUNICIPAL DE BREJO GRANDE DO ARAGUAIA - PA', title_style),
+                Paragraph('SECRETARIA MUNICIPAL DE EDUCACAO - SEMED', title_style),
+                Paragraph('CNPJ: 24.081.014/0001-45', title_style),
+            ],
+            prefeitura_logo,
+        ]],
+        colWidths=[120, 500, 120],
+    )
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+        ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+        ('ALIGN', (2, 0), (2, 0), 'RIGHT'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+
     story = [
-        Paragraph('ESTADO DO PARA', title_style),
-        Paragraph('PREFEITURA MUNICIPAL DE BREJO GRANDE DO ARAGUAIA - PA', title_style),
-        Paragraph('SECRETARIA MUNICIPAL DE EDUCACAO - SEMED', title_style),
-        Paragraph('CNPJ: 24.081.014/0001-45', title_style),
+        header_table,
         Spacer(1, 8),
+        faixa,
+        Spacer(1, 18),
         Paragraph(f'DEPARTAMENTO DE PESSOAL - DEPS<br/>DOCENTE E APOIO - {nome_mes.upper()} - {ano}<br/>{escola_nome.upper()}', title_style),
-        Spacer(1, 8),
+        Spacer(1, 14),
     ]
 
     data = [[

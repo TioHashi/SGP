@@ -38,10 +38,9 @@
             <td>{% if servidor.ativo %}Ativo{% else %}Inativo{% endif %}</td>
             <td>
               <div class="row-actions">
+                <a class="mini-action" href="{% url 'servidor_ficha' servidor.pk %}">Ficha</a>
                 <a class="mini-action" href="{% url 'servidor_editar' servidor.pk %}">Editar cadastro</a>
-                {% if request.user.is_superuser %}
-                  <a class="mini-action transfer-action" href="{% url 'servidor_transferir' servidor.pk %}">Transferir escola</a>
-                {% endif %}
+                <a class="mini-action transfer-action" href="{% url 'servidor_transferir' servidor.pk %}">Transferir escola</a>
               </div>
             </td>
           </tr>

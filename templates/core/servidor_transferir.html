@@ -4,7 +4,7 @@
 
 {% block content %}
   <section class="page-heading">
-    <p>Alterar escola vinculada ao servidor</p>
+    <p>A escola de destino receberá um alerta para aceitar a transferência</p>
     <h1>Transferir servidor</h1>
   </section>
 
@@ -22,6 +22,6 @@
         <small>{{ form.escola_destino.errors|striptags }}</small>
       {% endif %}
     </div>
-    <button type="submit">Transferir</button>
+    <button type="submit">Enviar solicitação</button>
   </form>
 {% endblock %}

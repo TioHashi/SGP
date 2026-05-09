@@ -1,0 +1,80 @@
+{% extends 'core/base.html' %}
+
+{% block title %}SGP - Ficha de {{ servidor.nome }}{% endblock %}
+
+{% block content %}
+  <section class="server-profile-hero">
+    <div>
+      <p>Ficha funcional</p>
+      <h1>{{ servidor.nome }}</h1>
+      <span>{{ servidor.escola.nome }} · {{ servidor.cargo|default:'Cargo não informado' }}</span>
+    </div>
+    <div class="profile-actions">
+      <a class="primary-link" href="{% url 'servidor_editar' servidor.pk %}">Editar cadastro</a>
+      <a class="toolbar-button" href="{% url 'servidor_transferir' servidor.pk %}">Transferir</a>
+    </div>
+  </section>
+
+  <section class="profile-grid">
+    <article class="profile-card highlight">
+      <span>Status</span>
+      <strong>{% if servidor.ativo %}Ativo{% else %}Inativo{% endif %}</strong>
+      {% if not servidor.ativo %}<p>{{ servidor.get_motivo_inativo_display|default:'Motivo não informado' }}</p>{% endif %}
+    </article>
+    <article class="profile-card">
+      <span>Vínculo</span>
+      <strong>{{ servidor.vinculo|default:'-' }}</strong>
+    </article>
+    <article class="profile-card">
+      <span>Carga horária</span>
+      <strong>{{ servidor.carga_horaria|default:'-' }}</strong>
+    </article>
+  </section>
+
+  <section class="detail-sections">
+    <article class="detail-card">
+      <h2>Identificação</h2>
+      <dl>
+        <div><dt>CPF</dt><dd>{{ servidor.cpf }}</dd></div>
+        <div><dt>RG</dt><dd>{{ servidor.rg|default:'-' }}</dd></div>
+        <div><dt>Sexo</dt><dd>{{ servidor.sexo|default:'-' }}</dd></div>
+        <div><dt>Nascimento</dt><dd>{{ servidor.data_nascimento|date:'d/m/Y'|default:'-' }}</dd></div>
+        <div><dt>Telefone</dt><dd>{{ servidor.telefone|default:'-' }}</dd></div>
+        <div><dt>Email</dt><dd>{{ servidor.email|default:'-' }}</dd></div>
+      </dl>
+    </article>
+
+    <article class="detail-card">
+      <h2>Endereço</h2>
+      <dl>
+        <div><dt>Logradouro</dt><dd>{{ servidor.logradouro|default:'-' }}</dd></div>
+        <div><dt>Número</dt><dd>{{ servidor.numero|default:'-' }}</dd></div>
+        <div><dt>Bairro / Vila</dt><dd>{{ servidor.bairro|default:'-' }}</dd></div>
+        <div><dt>Zona</dt><dd>{{ servidor.zona|default:'-' }}</dd></div>
+        <div><dt>Município</dt><dd>{{ servidor.municipio|default:'-' }}</dd></div>
+        <div><dt>Estado</dt><dd>{{ servidor.estado|default:'-' }}</dd></div>
+        <div><dt>CEP</dt><dd>{{ servidor.cep|default:'-' }}</dd></div>
+      </dl>
+    </article>
+
+    <article class="detail-card">
+      <h2>Formação e lotação</h2>
+      <dl>
+        <div><dt>Escolaridade</dt><dd>{{ servidor.escolaridade|default:'-' }}</dd></div>
+        <div><dt>Formação</dt><dd>{{ servidor.formacao|default:'-' }}</dd></div>
+        <div><dt>Instituição</dt><dd>{{ servidor.instituicao|default:'-' }}</dd></div>
+        <div><dt>Função</dt><dd>{{ servidor.funcao|default:'-' }}</dd></div>
+        <div><dt>Cargo</dt><dd>{{ servidor.cargo|default:'-' }}</dd></div>
+      </dl>
+    </article>
+
+    <article class="detail-card">
+      <h2>Datas</h2>
+      <dl>
+        <div><dt>Admissão</dt><dd>{{ servidor.data_admissao|date:'d/m/Y'|default:'-' }}</dd></div>
+        <div><dt>Início</dt><dd>{{ servidor.data_inicio|date:'d/m/Y'|default:'-' }}</dd></div>
+        <div><dt>Saída</dt><dd>{{ servidor.data_saida|date:'d/m/Y'|default:'-' }}</dd></div>
+      </dl>
+    </article>
+  </section>
+{% endblock %}
