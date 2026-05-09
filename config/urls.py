@@ -35,7 +35,7 @@ from core.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', LoginView.as_view(template_name='core/login.html'), name='login'),
+    path('', LoginView.as_view(template_name='core/login.html', redirect_authenticated_user=True), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('dashboard/', dashboard, name='dashboard'),
     path('servidores/', servidor_lista, name='servidor_lista'),

@@ -11,16 +11,22 @@ def escola_do_usuario(user):
 
 def alertas_sgp(request):
     if not request.user.is_authenticated:
-        return {'alertas_sgp': [], 'alertas_total': 0, 'alertas_nao_lidos': 0}
+        return {
+            'alertas_sgp': [],
+            'alertas_total': 0,
+            'alertas_nao_lidos': 0,
+            'escola_logada_nome': '',
+        }
 
     alertas = []
     lidas = set(request.session.get('notificacoes_lidas', []))
     hoje = timezone.localdate()
+    escola_usuario = escola_do_usuario(request.user)
+    escola_logada_nome = 'Administrador geral' if request.user.is_superuser else (escola_usuario.nome if escola_usuario else 'Sem escola vinculada')
     if hoje.day >= 15:
         servidores = Servidor.objects.filter(ativo=True)
-        escola = escola_do_usuario(request.user)
         if not request.user.is_superuser:
-            servidores = servidores.filter(escola=escola)
+            servidores = servidores.filter(escola=escola_usuario)
         folha_processada = Frequencia.objects.filter(
             servidor__in=servidores,
             mes=str(hoje.month),
@@ -52,9 +58,8 @@ def alertas_sgp(request):
         'escola_origem',
         'escola_destino',
     )
-    escola = escola_do_usuario(request.user)
     if not request.user.is_superuser:
-        transferencias = transferencias.filter(escola_destino=escola)
+        transferencias = transferencias.filter(escola_destino=escola_usuario)
 
     for transferencia in transferencias[:6]:
         codigo = f'transferencia-{transferencia.pk}'
@@ -69,4 +74,9 @@ def alertas_sgp(request):
         })
 
     alertas_nao_lidos = sum(1 for alerta in alertas if not alerta['lida'])
-    return {'alertas_sgp': alertas, 'alertas_total': len(alertas), 'alertas_nao_lidos': alertas_nao_lidos}
+    return {
+        'alertas_sgp': alertas,
+        'alertas_total': len(alertas),
+        'alertas_nao_lidos': alertas_nao_lidos,
+        'escola_logada_nome': escola_logada_nome,
+    }
