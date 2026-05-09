@@ -12,9 +12,11 @@
     <table>
       <thead>
         <tr>
+          {% if request.user.is_superuser %}<th>Escola</th>{% endif %}
           <th>Periodo</th>
           <th>Registros</th>
           <th>Ultima atualizacao</th>
+          {% if request.user.is_superuser %}<th>Alterações recentes</th>{% endif %}
           <th></th>
           <th></th>
           <th></th>
@@ -23,16 +25,30 @@
       <tbody>
         {% for folha in folhas %}
           <tr>
+            {% if request.user.is_superuser %}<td>{{ folha.escola_nome }}</td>{% endif %}
             <td>{{ folha.nome_mes }} / {{ folha.ano }}</td>
             <td>{{ folha.total }}</td>
             <td>{{ folha.atualizado_em|date:'d/m/Y H:i' }}</td>
-            <td><a href="{% url 'relatorio_folha' folha.mes folha.ano %}">Abrir</a></td>
-            <td><a href="{% url 'folha_mensal' folha.mes folha.ano %}">Editar folha</a></td>
-            <td><a href="{% url 'relatorio_folha_pdf' folha.mes folha.ano %}" target="_blank">PDF</a></td>
+            {% if request.user.is_superuser %}
+              <td class="change-preview-cell">
+                {% for alteracao in folha.alteracoes %}
+                  <span>
+                    {{ alteracao.criado_em|date:'d/m H:i' }} -
+                    {{ alteracao.servidor.nome }}:
+                    {{ alteracao.campo }} de "{{ alteracao.valor_anterior|default:'vazio' }}" para "{{ alteracao.valor_novo|default:'vazio' }}"
+                  </span>
+                {% empty %}
+                  <small>Nenhuma alteração registrada.</small>
+                {% endfor %}
+              </td>
+            {% endif %}
+            <td><a href="{% url 'relatorio_folha' folha.mes folha.ano %}{{ folha.querystring }}">Abrir</a></td>
+            <td><a href="{% url 'folha_mensal' folha.mes folha.ano %}{{ folha.querystring }}">Editar folha</a></td>
+            <td><a href="{% url 'relatorio_folha_pdf' folha.mes folha.ano %}{{ folha.querystring }}" target="_blank">PDF</a></td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="6">Nenhuma folha salva ainda.</td>
+            <td colspan="{% if request.user.is_superuser %}8{% else %}6{% endif %}">Nenhuma folha salva ainda.</td>
           </tr>
         {% endfor %}
       </tbody>

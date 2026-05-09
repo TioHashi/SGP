@@ -1103,6 +1103,7 @@ td {
   border-bottom: 1px solid var(--line);
   padding: 13px 14px;
   text-align: left;
+  vertical-align: top;
 }
 
 th {
@@ -1113,6 +1114,20 @@ th {
 td a {
   color: var(--brand);
   font-weight: 700;
+}
+
+.change-preview-cell {
+  max-width: 360px;
+}
+
+.change-preview-cell span,
+.change-preview-cell small {
+  color: var(--muted);
+  display: block;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  margin-bottom: 5px;
+  overflow-wrap: anywhere;
 }
 
 .row-actions {

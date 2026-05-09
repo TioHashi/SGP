@@ -9,7 +9,7 @@ from django.utils.text import slugify
 
 from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
 from .firebase import upload_pdf
-from .models import Escola, FolhaPdf, Frequencia, Servidor, TransferenciaServidor
+from .models import Escola, FolhaAlteracao, FolhaPdf, Frequencia, Servidor, TransferenciaServidor
 from .pdfs import folha_pdf_bytes
 
 
@@ -28,6 +28,28 @@ def servidores_permitidos(user):
         return queryset.none()
 
     return queryset.filter(escola=escola)
+
+
+def escola_folha_request(request):
+    if not request.user.is_superuser:
+        return escola_do_usuario(request.user)
+
+    escola_id = request.GET.get('escola')
+    if escola_id:
+        return get_object_or_404(Escola, pk=escola_id)
+    return None
+
+
+def servidores_folha_request(request):
+    servidores = servidores_permitidos(request.user).filter(ativo=True).order_by('nome')
+    escola = escola_folha_request(request)
+    if request.user.is_superuser and escola:
+        servidores = servidores.filter(escola=escola)
+    return list(servidores), escola
+
+
+def querystring_escola(escola):
+    return f'?escola={escola.pk}' if escola else ''
 
 
 @login_required
@@ -218,7 +240,7 @@ def folha_selecionar(request):
 
 @login_required
 def folha_mensal(request, mes, ano):
-    servidores = list(servidores_permitidos(request.user).filter(ativo=True).order_by('nome'))
+    servidores, escola = servidores_folha_request(request)
     frequencias = {
         frequencia.servidor_id: frequencia
         for frequencia in Frequencia.objects.filter(servidor__in=servidores, mes=mes, ano=ano)
@@ -226,16 +248,37 @@ def folha_mensal(request, mes, ano):
 
     if request.method == 'POST':
         for servidor in servidores:
-            faltas = request.POST.get(f'faltas_{servidor.pk}') or 0
+            faltas = int(request.POST.get(f'faltas_{servidor.pk}') or 0)
             observacoes = request.POST.get(f'observacoes_{servidor.pk}', '')
+            frequencia_atual = frequencias.get(servidor.pk)
+            alteracoes = []
+            if frequencia_atual:
+                if frequencia_atual.faltas != faltas:
+                    alteracoes.append(('Faltas', str(frequencia_atual.faltas), str(faltas)))
+                if frequencia_atual.observacoes != observacoes:
+                    alteracoes.append(('Observações', frequencia_atual.observacoes, observacoes))
+            elif faltas or observacoes:
+                alteracoes.append(('Registro', '', 'Folha preenchida'))
+
             Frequencia.objects.update_or_create(
                 servidor=servidor,
                 mes=mes,
                 ano=ano,
                 defaults={'faltas': faltas, 'observacoes': observacoes},
             )
+            for campo, anterior, novo in alteracoes:
+                FolhaAlteracao.objects.create(
+                    escola=servidor.escola,
+                    servidor=servidor,
+                    mes=mes,
+                    ano=ano,
+                    campo=campo,
+                    valor_anterior=anterior,
+                    valor_novo=novo,
+                    usuario=request.user,
+                )
         messages.success(request, 'Folha salva com sucesso.')
-        return redirect('folha_mensal', mes=mes, ano=ano)
+        return redirect(f"{redirect('folha_mensal', mes=mes, ano=ano).url}{querystring_escola(escola)}")
 
     linhas = [{'servidor': servidor, 'frequencia': frequencias.get(servidor.pk)} for servidor in servidores]
     contexto = {
@@ -244,6 +287,8 @@ def folha_mensal(request, mes, ano):
         'ano': ano,
         'nome_mes': dict(Frequencia.MESES_CHOICES).get(mes, mes),
         'obs_choices': Frequencia.OBS_CHOICES,
+        'escola': escola,
+        'querystring': querystring_escola(escola),
     }
     return render(request, 'core/folha_mensal.html', contexto)
 
@@ -251,21 +296,41 @@ def folha_mensal(request, mes, ano):
 @login_required
 def relatorios(request):
     frequencias = Frequencia.objects.filter(servidor__in=servidores_permitidos(request.user))
-    folhas = (
+    agrupamento = ['mes', 'ano']
+    if request.user.is_superuser:
+        agrupamento.extend(['servidor__escola_id', 'servidor__escola__nome'])
+
+    ordenacao = ['-ano', '-mes']
+    if request.user.is_superuser:
+        ordenacao.append('servidor__escola__nome')
+
+    folhas = list(
         frequencias
-        .values('mes', 'ano')
+        .values(*agrupamento)
         .annotate(total=Count('id'), atualizado_em=Max('atualizado_em'))
-        .order_by('-ano', '-mes')
+        .order_by(*ordenacao)
     )
     meses = dict(Frequencia.MESES_CHOICES)
     for folha in folhas:
         folha['nome_mes'] = meses.get(folha['mes'], folha['mes'])
+        escola_id = folha.get('servidor__escola_id')
+        folha['escola_id'] = escola_id
+        folha['escola_nome'] = folha.get('servidor__escola__nome') or escola_do_usuario(request.user)
+        folha['querystring'] = f'?escola={escola_id}' if request.user.is_superuser and escola_id else ''
+        folha['alteracoes'] = []
+        if request.user.is_superuser and escola_id:
+            folha['alteracoes'] = list(
+                FolhaAlteracao.objects
+                .filter(escola_id=escola_id, mes=folha['mes'], ano=folha['ano'])
+                .select_related('servidor', 'usuario')
+                .order_by('-criado_em')[:4]
+            )
     return render(request, 'core/relatorios.html', {'folhas': folhas})
 
 
 @login_required
 def relatorio_folha(request, mes, ano):
-    servidores = list(servidores_permitidos(request.user).filter(ativo=True).order_by('nome'))
+    servidores, escola = servidores_folha_request(request)
     frequencias = {
         frequencia.servidor_id: frequencia
         for frequencia in Frequencia.objects.filter(servidor__in=servidores, mes=mes, ano=ano)
@@ -276,20 +341,20 @@ def relatorio_folha(request, mes, ano):
         'mes': mes,
         'ano': ano,
         'nome_mes': dict(Frequencia.MESES_CHOICES).get(mes, mes),
-        'escola': escola_do_usuario(request.user),
+        'escola': escola,
+        'querystring': querystring_escola(escola),
     }
     return render(request, 'core/relatorio_folha.html', contexto)
 
 
 @login_required
 def relatorio_folha_pdf(request, mes, ano):
-    servidores = list(servidores_permitidos(request.user).filter(ativo=True).order_by('nome'))
+    servidores, escola = servidores_folha_request(request)
     frequencias = {
         frequencia.servidor_id: frequencia
         for frequencia in Frequencia.objects.filter(servidor__in=servidores, mes=mes, ano=ano)
     }
     linhas = [{'servidor': servidor, 'frequencia': frequencias.get(servidor.pk)} for servidor in servidores]
-    escola = escola_do_usuario(request.user)
     nome_mes = dict(Frequencia.MESES_CHOICES).get(mes, mes)
     escola_nome = escola.nome if escola else 'semed'
     nome_arquivo = f'Frequência Mensal ({nome_mes}/{ano}).pdf'

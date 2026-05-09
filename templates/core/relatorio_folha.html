@@ -6,8 +6,8 @@
 {% block content %}
   <section class="report-toolbar">
     <a href="{% url 'relatorios' %}">Voltar</a>
-    <a class="toolbar-button" href="{% url 'folha_mensal' mes ano %}">Editar esta folha</a>
-    <a class="toolbar-button" href="{% url 'relatorio_folha_pdf' mes ano %}" target="_blank">Gerar PDF</a>
+    <a class="toolbar-button" href="{% url 'folha_mensal' mes ano %}{{ querystring }}">Editar esta folha</a>
+    <a class="toolbar-button" href="{% url 'relatorio_folha_pdf' mes ano %}{{ querystring }}" target="_blank">Gerar PDF</a>
     <button type="button" onclick="window.print()">Imprimir</button>
   </section>
 

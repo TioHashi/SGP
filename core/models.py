@@ -215,3 +215,23 @@ class FolhaPdf(models.Model):
     def __str__(self):
         escola = self.escola.nome if self.escola else 'SEMED'
         return f'{self.nome_arquivo} - {escola}'
+
+
+class FolhaAlteracao(models.Model):
+    escola = models.ForeignKey(Escola, on_delete=models.PROTECT, related_name='alteracoes_folha')
+    servidor = models.ForeignKey(Servidor, on_delete=models.CASCADE, related_name='alteracoes_folha')
+    mes = models.CharField(max_length=2, choices=Frequencia.MESES_CHOICES)
+    ano = models.CharField(max_length=4, choices=Frequencia.ANO_CHOICES)
+    campo = models.CharField(max_length=40)
+    valor_anterior = models.CharField(max_length=120, blank=True)
+    valor_novo = models.CharField(max_length=120, blank=True)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'alteração da folha'
+        verbose_name_plural = 'alterações das folhas'
+
+    def __str__(self):
+        return f'{self.servidor.nome} - {self.campo} - {self.get_mes_display()}/{self.ano}'

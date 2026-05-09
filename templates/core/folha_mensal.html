@@ -8,7 +8,7 @@
       <p>Frequência mensal - {{ ano }}</p>
       <h1>{{ nome_mes }}</h1>
     </div>
-    <a class="primary-link" href="{% url 'relatorio_folha' mes ano %}">Ver relatório</a>
+    <a class="primary-link" href="{% url 'relatorio_folha' mes ano %}{{ querystring }}">Ver relatório</a>
   </section>
 
   <form method="post">
