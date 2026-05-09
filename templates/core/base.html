@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}SGP{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20260509">
 </head>
 <body>
   <header class="topbar">
@@ -19,13 +19,19 @@
     <details class="alert-menu">
       <summary aria-label="Alertas">
         <span>Alertas</span>
-        {% if alertas_total %}<strong>{{ alertas_total }}</strong>{% endif %}
+        {% if alertas_nao_lidos %}<strong aria-label="{{ alertas_nao_lidos }} notificação nova"></strong>{% endif %}
       </summary>
       <div class="alert-dropdown">
+        <div class="alert-dropdown-head">
+          <b>Notificações</b>
+          <small>{{ alertas_nao_lidos }} nova(s)</small>
+        </div>
         {% for alerta in alertas_sgp %}
-          <article>
-            <b>{{ alerta.titulo }}</b>
-            <p>{{ alerta.texto }}</p>
+          <article class="{% if alerta.lida %}is-read{% else %}is-unread{% endif %}">
+            <a href="{% url 'notificacao_ler' alerta.codigo %}?next={{ request.path }}">
+              <b>{{ alerta.titulo }}</b>
+              <p>{{ alerta.texto }}</p>
+            </a>
             {% if alerta.transferencia %}
               <form method="post" action="{% url 'transferencia_aceitar' alerta.transferencia.pk %}">
                 {% csrf_token %}
@@ -34,7 +40,7 @@
             {% endif %}
           </article>
         {% empty %}
-          <article>
+          <article class="is-read">
             <b>Sem alertas</b>
             <p>Nenhuma pendência no momento.</p>
           </article>

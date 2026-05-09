@@ -1,170 +1,116 @@
 {% extends 'core/base.html' %}
 
-{% block title %}SGP - Inicio{% endblock %}
+{% block title %}SGP - Início{% endblock %}
 
 {% block content %}
-  {{ dashboard_data|json_script:'dashboard-data' }}
-
-  <section class="dashboard-hero">
-    <div>
-      <p>Bem-vindo, {{ request.user.username }}</p>
-      <h1>{% if escola_atual %}{{ escola_atual.nome }}{% else %}Painel geral do SGP{% endif %}</h1>
-      <span>Resumo funcional da escola e acompanhamento da folha.</span>
-    </div>
-    <div class="hero-actions">
-      <a class="primary-link" href="{% url 'servidor_criar' %}">Novo servidor</a>
-      <a class="toolbar-button" href="{% url 'folha_selecionar' %}">Abrir folha</a>
-    </div>
-  </section>
-
-  <section class="card-grid dashboard-cards">
-    {% for card in cards %}
-      <article class="metric-card">
-        <span>{{ card.label }}</span>
-        <strong>{{ card.value }}</strong>
-        <p>{{ card.hint }}</p>
-      </article>
-    {% endfor %}
-  </section>
-
-  <section class="dashboard-strip compact-strip">
-    <article>
-      <span>Efetivos</span>
-      <strong>{{ efetivos_total }}</strong>
-    </article>
-    <article>
-      <span>Temporários</span>
-      <strong>{{ temporarios_total }}</strong>
-    </article>
-    <article>
-      <span>Ativos</span>
-      <strong>{{ status_resumo.ativos }}</strong>
-    </article>
-    <article>
-      <span>Inativos</span>
-      <strong>{{ status_resumo.inativos }}</strong>
-    </article>
-  </section>
-
-  <section class="dashboard-layout dashboard-main">
-    <article class="chart-panel-app">
-      <div class="panel-heading">
-        <div>
-          <p>Percentual por vinculo</p>
-          <h2>Efetivo x Temporario</h2>
-        </div>
+  <section class="dashboard-a4">
+    <header class="dash-cover">
+      <div>
+        <p>Sistema de Gestão de Pessoal · SGP</p>
+        <h1>{% if escola_atual %}{{ escola_atual.nome }}{% else %}Painel geral do SGP{% endif %}</h1>
+        <span>Resumo funcional da escola e acompanhamento da folha mensal</span>
       </div>
-      <div class="chart-box">
-        <canvas id="vinculoChart"></canvas>
-      </div>
-      <div class="percentage-list">
-        {% for item in vinculo_resumo %}
+      <aside>
+        <small>Relatório de</small>
+        <strong>{{ hoje|date:'l, d \\d\\e F \\d\\e Y' }}</strong>
+        <span>Folha em dia</span>
+      </aside>
+    </header>
+
+    <section class="dash-stat-grid">
+      {% for card in cards %}
+        <article class="dash-stat tone-{{ forloop.counter }}">
           <div>
-            <span>{{ item.label }}</span>
-            <strong>{{ item.percentual }}%</strong>
-            <small>{{ item.total }} servidor(es)</small>
+            <span>{{ card.label }}</span>
+            <strong>{{ card.value }}</strong>
+            <p>{{ card.hint }}</p>
           </div>
-        {% empty %}
-          <p>Nenhum vinculo cadastrado.</p>
-        {% endfor %}
-      </div>
-    </article>
+          <i>{{ card.label|slice:':1' }}</i>
+        </article>
+      {% endfor %}
+    </section>
 
-    <article class="work-panel insight-panel">
-      <div class="panel-heading">
-        <div>
-          <p>Resumo útil</p>
-          <h2>Quadro da escola</h2>
+    <section class="dash-two-columns">
+      <article class="dash-panel">
+        <h2>Distribuição por Vínculo</h2>
+        <div class="dash-progress-grid">
+          {% for item in vinculo_resumo %}
+            <div class="dash-progress-card">
+              <div><b>{{ item.label }}</b><strong>{{ item.percentual }}%</strong></div>
+              <span class="progress-track"><span style="width: {{ item.percentual_css }}%;"></span></span>
+              <p>{{ item.total }} servidor(es)</p>
+            </div>
+          {% empty %}
+            <p>Nenhum vínculo cadastrado.</p>
+          {% endfor %}
         </div>
-      </div>
-      <div class="insight-list">
-        <div><span>Servidores disponíveis para folha</span><strong>{{ status_resumo.ativos }}</strong></div>
-        <div><span>Cadastros fora da folha mensal</span><strong>{{ status_resumo.inativos }}</strong></div>
-        <div><span>Funções cadastradas</span><strong>{{ funcoes|length }}</strong></div>
-        <div><span>Cargos cadastrados</span><strong>{{ cargos|length }}</strong></div>
-      </div>
-    </article>
-  </section>
+        <div class="dash-mini-grid">
+          <div><span>Ativos</span><strong>{{ status_resumo.ativos }}</strong></div>
+          <div><span>Inativos</span><strong>{{ status_resumo.inativos }}</strong></div>
+        </div>
+      </article>
 
-  <section class="dashboard-layout dashboard-layout-secondary">
-    <article class="work-panel">
-      <h2>Funções por quantidade</h2>
-      {% if funcoes %}
-        <div class="rank-list">
+      <article class="dash-panel">
+        <h2>Quadro da Escola</h2>
+        <ul class="dash-info-list">
+          <li><span>Servidores na folha</span><strong>{{ status_resumo.ativos }}</strong></li>
+          <li><span>Fora da folha mensal</span><strong>{{ status_resumo.inativos }}</strong></li>
+          <li><span>Funções cadastradas</span><strong>{{ funcoes|length }}</strong></li>
+          <li><span>Cargos cadastrados</span><strong>{{ cargos|length }}</strong></li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="dash-two-columns">
+      <article class="dash-panel">
+        <h2>Servidores por Função</h2>
+        <div class="dash-bars">
           {% for item in funcoes %}
             <div>
-              <span>{{ item.funcao }}</span>
-              <strong>{{ item.total }}</strong>
+              <p><b>{{ item.funcao }}</b><strong>{{ item.total }}</strong></p>
+              <span><span style="width: {{ item.percentual_css }}%;"></span></span>
             </div>
+          {% empty %}
+            <p>Nenhuma função cadastrada.</p>
           {% endfor %}
         </div>
-      {% else %}
-        <p>Nenhuma funcao cadastrada.</p>
-      {% endif %}
-    </article>
+      </article>
 
-    <article class="work-panel">
-      <h2>Cargos por quantidade</h2>
-      {% if cargos %}
-        <div class="rank-list">
+      <article class="dash-panel">
+        <h2>Servidores por Cargo</h2>
+        <div class="dash-bars accent-bars">
           {% for item in cargos %}
             <div>
-              <span>{{ item.cargo }}</span>
-              <strong>{{ item.total }}</strong>
+              <p><b>{{ item.cargo }}</b><strong>{{ item.total }}</strong></p>
+              <span><span style="width: {{ item.percentual_css }}%;"></span></span>
             </div>
+          {% empty %}
+            <p>Nenhum cargo cadastrado.</p>
           {% endfor %}
         </div>
-      {% else %}
-        <p>Nenhum cargo cadastrado.</p>
-      {% endif %}
-    </article>
-  </section>
+      </article>
+    </section>
 
-  <section class="dashboard-layout single-panel">
-    <article class="chart-panel-app wide-panel">
-      <div class="panel-heading">
-        <div>
-          <p>Distribuição visual</p>
-          <h2>Servidores por cargo</h2>
+    <section class="dash-two-columns">
+      <article class="dash-panel">
+        <h2>Próximos Compromissos</h2>
+        <div class="dash-events">
+          <div><strong>15</strong><span>Fechamento da folha mensal</span><small>Conferir lançamentos e observações</small></div>
+          <div><strong>30</strong><span>Envio do relatório à secretaria</span><small>Gerar PDF e arquivar relatório</small></div>
         </div>
-      </div>
-      <div class="chart-box chart-box-wide">
-        <canvas id="cargoChart"></canvas>
-      </div>
-    </article>
+      </article>
+      <article class="dash-panel dash-health">
+        <h2>Saúde da Folha</h2>
+        <strong>100%</strong>
+        <span>Conformidade</span>
+        <p>Revise mensalmente os vínculos e cargos para garantir o repasse correto.</p>
+      </article>
+    </section>
+
+    <footer class="dash-footer">
+      <span>SGP · Sistema de Gestão Pedagógica</span>
+      <strong>© Antonio Fanoel Costa Cabral</strong>
+      <span>Documento gerado automaticamente</span>
+    </footer>
   </section>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    const dashboardData = JSON.parse(document.getElementById('dashboard-data').textContent);
-    const colors = ['#1e5f74', '#c93d3d', '#f2c94c', '#2f9e44', '#6f42c1', '#f08c00'];
-
-    new Chart(document.getElementById('vinculoChart'), {
-      type: 'doughnut',
-      data: {
-        labels: dashboardData.vinculos.labels,
-        datasets: [{ data: dashboardData.vinculos.data, backgroundColor: colors }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } }
-      }
-    });
-
-    new Chart(document.getElementById('cargoChart'), {
-      type: 'bar',
-      data: {
-        labels: dashboardData.cargos.labels,
-        datasets: [{ label: 'Servidores', data: dashboardData.cargos.data, backgroundColor: '#2f9e44' }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
-        plugins: { legend: { display: false } }
-      }
-    });
-  </script>
 {% endblock %}
