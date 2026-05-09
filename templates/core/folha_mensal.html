@@ -5,53 +5,57 @@
 {% block content %}
   <section class="page-heading split-heading">
     <div>
-      <p>Frequência mensal - {{ ano }}</p>
+      <p>Frequencia mensal - {{ ano }}</p>
       <h1>{{ nome_mes }}</h1>
     </div>
-    <a class="primary-link" href="{% url 'relatorio_folha' mes ano %}">Ver relatório</a>
+    <a class="primary-link" href="{% url 'relatorio_folha' mes ano %}">Ver relatorio</a>
   </section>
 
   <form method="post">
     {% csrf_token %}
-    <section class="frequency-editor">
-      <div class="frequency-editor-head">
-        <span>N.</span>
-        <span>Servidor</span>
-        <span>Informações funcionais</span>
-        <span>Lançamento</span>
-      </div>
-      {% for linha in linhas %}
-        <article class="frequency-row">
-          <div class="frequency-index">{{ forloop.counter }}</div>
-          <div class="frequency-person">
-            <strong>{{ linha.servidor.nome }}</strong>
-            <span>{{ linha.servidor.escola.nome }}</span>
-          </div>
-          <div class="frequency-meta">
-            <div><span>Vínculo</span><strong>{{ linha.servidor.vinculo|default:'-' }}</strong></div>
-            <div><span>Cargo</span><strong>{{ linha.servidor.cargo|default:'-' }}</strong></div>
-            <div><span>Função</span><strong>{{ linha.servidor.funcao|default:'-' }}</strong></div>
-            <div><span>Formação</span><strong>{{ linha.servidor.escolaridade|default:'-' }}</strong></div>
-            <div><span>Carga horária</span><strong>{{ linha.servidor.carga_horaria|default:'-' }}</strong></div>
-          </div>
-          <div class="frequency-inputs">
-            <label>
-              <span>Faltas</span>
-              <input class="mini-field" type="number" min="0" max="31" name="faltas_{{ linha.servidor.pk }}" value="{{ linha.frequencia.faltas|default:0 }}">
-            </label>
-            <label>
-              <span>Observações</span>
-              <select class="mini-select" name="observacoes_{{ linha.servidor.pk }}">
-                {% for value,label in obs_choices %}
-                  <option value="{{ value }}" {% if linha.frequencia.observacoes == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </label>
-          </div>
-        </article>
-      {% empty %}
-        <article class="frequency-row empty-row">Nenhum servidor ativo encontrado para esta escola.</article>
-      {% endfor %}
+    <section class="table-card frequency-table">
+      <table>
+        <thead>
+          <tr>
+            <th>N.</th>
+            <th>Nome completo</th>
+            <th>Vinculo</th>
+            <th>Cargo</th>
+            <th>Funcao</th>
+            <th>Formacao</th>
+            <th>Carga horaria</th>
+            <th>Faltas</th>
+            <th>Observacoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for linha in linhas %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ linha.servidor.nome }}</td>
+              <td>{{ linha.servidor.vinculo|default:'-' }}</td>
+              <td>{{ linha.servidor.cargo|default:'-' }}</td>
+              <td>{{ linha.servidor.funcao|default:'-' }}</td>
+              <td>{{ linha.servidor.escolaridade|default:'-' }}</td>
+              <td>{{ linha.servidor.carga_horaria|default:'-' }}</td>
+              <td>
+                <input class="mini-field" type="number" min="0" max="31" name="faltas_{{ linha.servidor.pk }}" value="{{ linha.frequencia.faltas|default:0 }}">
+              </td>
+              <td>
+                <select class="mini-select" name="observacoes_{{ linha.servidor.pk }}">
+                  {% for value,label in obs_choices %}
+                    <option value="{{ value }}" {% if linha.frequencia.observacoes == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9">Nenhum servidor ativo encontrado para esta escola.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </section>
 
     <div class="form-actions bottom-actions">

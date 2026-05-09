@@ -19,19 +19,13 @@
     <details class="alert-menu">
       <summary aria-label="Alertas">
         <span>Alertas</span>
-        {% if alertas_nao_lidos %}<strong aria-label="{{ alertas_nao_lidos }} notificação nova"></strong>{% endif %}
+        {% if alertas_total %}<strong>{{ alertas_total }}</strong>{% endif %}
       </summary>
       <div class="alert-dropdown">
-        <div class="alert-dropdown-head">
-          <b>Notificações</b>
-          <small>{{ alertas_nao_lidos }} nova(s)</small>
-        </div>
         {% for alerta in alertas_sgp %}
-          <article class="{% if alerta.lida %}is-read{% else %}is-unread{% endif %}">
-            <a href="{% url 'notificacao_ler' alerta.codigo %}?next={{ request.path }}">
-              <b>{{ alerta.titulo }}</b>
-              <p>{{ alerta.texto }}</p>
-            </a>
+          <article>
+            <b>{{ alerta.titulo }}</b>
+            <p>{{ alerta.texto }}</p>
             {% if alerta.transferencia %}
               <form method="post" action="{% url 'transferencia_aceitar' alerta.transferencia.pk %}">
                 {% csrf_token %}
@@ -40,7 +34,7 @@
             {% endif %}
           </article>
         {% empty %}
-          <article class="is-read">
+          <article>
             <b>Sem alertas</b>
             <p>Nenhuma pendência no momento.</p>
           </article>
