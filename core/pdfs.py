@@ -45,22 +45,22 @@ def folha_pdf_bytes(linhas, mes, ano, escola=None):
     nome_mes = dict(Frequencia.MESES_CHOICES).get(mes, mes)
     escola_nome = escola.nome if escola else 'SEMED'
     static_dir = settings.BASE_DIR / 'static' / 'img'
-    semed_logo = image_or_empty(static_dir / 'semed-logo.png', 78, 78)
-    prefeitura_logo = image_or_empty(static_dir / 'prefeitura-logo.png', 72, 72)
+    prefeitura_logo = image_or_empty(static_dir / 'prefeitura-logo.png', 58, 40)
+    semed_logo = image_or_empty(static_dir / 'semed-logo.png', 48, 50)
     faixa = image_or_empty(static_dir / 'faixa-ref.png', 700, 4)
 
     header_table = Table(
         [[
-            semed_logo,
+            prefeitura_logo,
             [
                 Paragraph('ESTADO DO PARA', title_style),
                 Paragraph('PREFEITURA MUNICIPAL DE BREJO GRANDE DO ARAGUAIA - PA', title_style),
                 Paragraph('SECRETARIA MUNICIPAL DE EDUCACAO - SEMED', title_style),
                 Paragraph('CNPJ: 24.081.014/0001-45', title_style),
             ],
-            prefeitura_logo,
+            semed_logo,
         ]],
-        colWidths=[120, 500, 120],
+        colWidths=[95, 550, 95],
     )
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),

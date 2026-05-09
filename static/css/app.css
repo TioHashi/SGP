@@ -822,21 +822,21 @@ td a {
 .frequency-header {
   align-items: start;
   display: grid;
-  grid-template-columns: 170px 1fr 170px;
-  min-height: 145px;
+  grid-template-columns: 120px 1fr 120px;
+  min-height: 96px;
 }
 
 .report-logo-left {
-  max-height: 120px;
+  max-height: 78px;
   object-fit: contain;
-  width: 126px;
+  width: 108px;
 }
 
 .report-logo-right {
   justify-self: end;
-  max-height: 122px;
+  max-height: 78px;
   object-fit: contain;
-  width: 150px;
+  width: 108px;
 }
 
 .official-title {
@@ -845,14 +845,14 @@ td a {
   gap: 6px;
   justify-items: center;
   line-height: 1.15;
-  padding-top: 18px;
+  padding-top: 10px;
   text-align: center;
 }
 
 .color-strip {
   display: block;
   height: 5px;
-  margin: 0 auto 24px;
+  margin: 0 auto 20px;
   width: calc(100% - 80px);
 }
 
