@@ -20,8 +20,8 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
 
 @admin.register(Servidor)
 class ServidorAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'cpf', 'escola', 'cargo', 'vinculo', 'ativo', 'motivo_inativo')
-    list_filter = ('escola', 'cargo', 'vinculo', 'ativo', 'motivo_inativo')
+    list_display = ('nome', 'cpf', 'escola', 'cargo', 'vinculo', 'ativo', 'motivo_inativo', 'licenca_tipo', 'licenca_inicio', 'licenca_fim')
+    list_filter = ('escola', 'cargo', 'vinculo', 'ativo', 'motivo_inativo', 'licenca_tipo')
     search_fields = ('nome', 'cpf', 'rg', 'escola__nome')
     autocomplete_fields = ('escola',)
 

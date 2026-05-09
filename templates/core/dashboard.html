@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
 {% block title %}SGP - Início{% endblock %}
 
@@ -6,6 +7,7 @@
   <section class="dashboard-a4">
     <header class="dash-cover">
       <div>
+        <img class="dash-brand-image" src="{% static 'img/sgp-horizontal.png' %}" alt="SGP Sistema de Gerenciamento de Pessoas">
         <p>Sistema de Gestão de Pessoal · SGP</p>
         <h1>{% if escola_atual %}{{ escola_atual.nome }}{% else %}Painel geral do SGP{% endif %}</h1>
         <span>Resumo funcional da escola e acompanhamento da folha mensal</span>
@@ -25,7 +27,6 @@
             <strong>{{ card.value }}</strong>
             <p>{{ card.hint }}</p>
           </div>
-          <i>{{ card.label|slice:':1' }}</i>
         </article>
       {% endfor %}
     </section>
@@ -96,21 +97,23 @@
         <h2>Próximos Compromissos</h2>
         <div class="dash-events">
           <div><strong>15</strong><span>Fechamento da folha mensal</span><small>Conferir lançamentos e observações</small></div>
-          <div><strong>30</strong><span>Envio do relatório à secretaria</span><small>Gerar PDF e arquivar relatório</small></div>
+          <div><strong>15</strong><span>Envio do relatório à secretaria</span><small>Gerar PDF e arquivar relatório</small></div>
         </div>
       </article>
-      <article class="dash-panel dash-health">
+      <article class="dash-panel dash-health" style="--health: {{ folha_saude }}; --health-color: {{ folha_saude_cor }};">
         <h2>Saúde da Folha</h2>
-        <strong>100%</strong>
-        <span>Conformidade</span>
+        <div class="health-ring">
+          <strong>{{ folha_saude }}%</strong>
+          <span>Conformidade</span>
+        </div>
         <p>Revise mensalmente os vínculos e cargos para garantir o repasse correto.</p>
       </article>
     </section>
 
     <footer class="dash-footer">
-      <span>SGP · Sistema de Gestão Pedagógica</span>
+      <span>SGP · Sistema de Gestão de Pessoas</span>
       <strong>© Antonio Fanoel Costa Cabral</strong>
-      <span>Documento gerado automaticamente</span>
+      <span>Todos os direitos reservados</span>
     </footer>
   </section>
 {% endblock %}

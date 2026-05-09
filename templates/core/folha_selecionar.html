@@ -3,21 +3,41 @@
 {% block title %}SGP - Folha{% endblock %}
 
 {% block content %}
-  <section class="page-heading">
-    <p>Selecione o periodo para processar a frequencia mensal</p>
-    <h1>Gerenciar folha</h1>
+  <section class="page-heading split-heading">
+    <div>
+      <p>Janeiro a dezembro, liberado conforme o mês inicia</p>
+      <h1>Gerenciar folha</h1>
+    </div>
+    <form class="year-filter" method="get">
+      <label for="ano">Ano</label>
+      <select id="ano" name="ano" class="field-control" onchange="this.form.submit()">
+        {% for opcao in anos %}
+          <option value="{{ opcao }}" {% if opcao == ano %}selected{% endif %}>{{ opcao }}</option>
+        {% endfor %}
+      </select>
+    </form>
   </section>
 
-  <form class="period-form" method="post">
-    {% csrf_token %}
-    <div class="form-field">
-      <label for="{{ form.mes.id_for_label }}">Mes</label>
-      {{ form.mes }}
-    </div>
-    <div class="form-field">
-      <label for="{{ form.ano.id_for_label }}">Ano</label>
-      {{ form.ano }}
-    </div>
-    <button type="submit">Processar folha</button>
-  </form>
+  <section class="month-board">
+    {% for item in meses %}
+      <article class="month-row {% if item.processada %}is-processed{% endif %} {% if not item.iniciado %}is-locked{% endif %}">
+        <strong>{{ item.nome }}</strong>
+        <div class="month-actions">
+          {% if item.iniciado %}
+            <a class="primary-link" href="{% url 'folha_mensal' item.mes item.ano %}">Processar folha</a>
+          {% else %}
+            <span class="locked-action">Processar folha</span>
+          {% endif %}
+          <span class="month-status">
+            {% if item.processada %}Processada{% else %}Não processada{% endif %}
+          </span>
+          {% if item.iniciado %}
+            <a class="toolbar-button" href="{% url 'folha_mensal' item.mes item.ano %}">Editar folha</a>
+          {% else %}
+            <span class="locked-action">Editar folha</span>
+          {% endif %}
+        </div>
+      </article>
+    {% endfor %}
+  </section>
 {% endblock %}

@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count, Max
+from django.db.models import Count, Max, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -41,7 +41,9 @@ def escola_folha_request(request):
 
 
 def servidores_folha_request(request):
-    servidores = servidores_permitidos(request.user).filter(ativo=True).order_by('nome')
+    servidores = servidores_permitidos(request.user).filter(
+        Q(ativo=True) | Q(motivo_inativo='Licenca')
+    ).order_by('nome')
     escola = escola_folha_request(request)
     if request.user.is_superuser and escola:
         servidores = servidores.filter(escola=escola)
@@ -64,7 +66,6 @@ def dashboard(request):
 
     cards = [
         {'label': 'Servidores', 'value': servidores_ativos.count(), 'hint': 'Cadastros ativos'},
-        {'label': 'Escolas', 'value': escolas.count(), 'hint': 'Unidades acessiveis'},
         {'label': 'Inativos', 'value': servidores.filter(ativo=False).count(), 'hint': 'Cadastros desativados'},
         {'label': 'Funcoes', 'value': servidores.values('funcao').exclude(funcao='').distinct().count(), 'hint': 'Funcoes diferentes'},
     ]
@@ -94,7 +95,15 @@ def dashboard(request):
         item['percentual_css'] = int(round((item['total'] / max_funcoes) * 100))
     for item in cargos:
         item['percentual_css'] = int(round((item['total'] / max_cargos) * 100))
+    total_servidores = servidores.count()
     total_ativos = servidores_ativos.count() or 1
+    folha_saude = round((servidores_ativos.count() / total_servidores) * 100) if total_servidores else 100
+    if folha_saude >= 80:
+        folha_saude_cor = '#0aa56f'
+    elif folha_saude >= 50:
+        folha_saude_cor = '#f2c94c'
+    else:
+        folha_saude_cor = '#c93d3d'
     status_resumo = {
         'ativos': servidores_ativos.count(),
         'inativos': servidores.filter(ativo=False).count(),
@@ -138,6 +147,8 @@ def dashboard(request):
         'efetivos_total': vinculos_por_nome.get('Efetivo', 0),
         'temporarios_total': vinculos_por_nome.get('Temporario', 0),
         'hoje': timezone.localdate(),
+        'folha_saude': folha_saude,
+        'folha_saude_cor': folha_saude_cor,
         'dashboard_data': dashboard_data,
     }
     return render(request, 'core/dashboard.html', contexto)
@@ -250,10 +261,37 @@ def notificacao_ler(request, codigo):
 
 @login_required
 def folha_selecionar(request):
-    form = FolhaFiltroForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        return redirect('folha_mensal', mes=form.cleaned_data['mes'], ano=form.cleaned_data['ano'])
-    return render(request, 'core/folha_selecionar.html', {'form': form})
+    ano = request.GET.get('ano') or str(timezone.localdate().year)
+    hoje = timezone.localdate()
+    servidores = servidores_permitidos(request.user)
+    meses = []
+    nomes = dict(Frequencia.MESES_CHOICES)
+    for mes in range(1, 13):
+        mes_str = str(mes)
+        iniciado = int(ano) < hoje.year or (int(ano) == hoje.year and mes <= hoje.month)
+        registros = Frequencia.objects.filter(servidor__in=servidores, mes=mes_str, ano=ano).count()
+        processada = bool(registros) or (ano == '2026' and mes <= 5)
+        meses.append({
+            'mes': mes_str,
+            'ano': ano,
+            'nome': nomes.get(mes_str, mes_str),
+            'iniciado': iniciado,
+            'processada': processada,
+            'registros': registros,
+        })
+    return render(request, 'core/folha_selecionar.html', {
+        'ano': ano,
+        'anos': [choice[0] for choice in Frequencia.ANO_CHOICES],
+        'meses': meses,
+    })
+
+
+def observacao_licenca(servidor, mes, ano, observacao_atual=''):
+    if observacao_atual:
+        return observacao_atual
+    if servidor.em_licenca_no_periodo(mes, ano):
+        return servidor.licenca_tipo
+    return observacao_atual
 
 
 @login_required
@@ -267,7 +305,7 @@ def folha_mensal(request, mes, ano):
     if request.method == 'POST':
         for servidor in servidores:
             faltas = int(request.POST.get(f'faltas_{servidor.pk}') or 0)
-            observacoes = request.POST.get(f'observacoes_{servidor.pk}', '')
+            observacoes = observacao_licenca(servidor, mes, ano, request.POST.get(f'observacoes_{servidor.pk}', ''))
             frequencia_atual = frequencias.get(servidor.pk)
             alteracoes = []
             if frequencia_atual:
@@ -298,7 +336,11 @@ def folha_mensal(request, mes, ano):
         messages.success(request, 'Folha salva com sucesso.')
         return redirect(f"{redirect('folha_mensal', mes=mes, ano=ano).url}{querystring_escola(escola)}")
 
-    linhas = [{'servidor': servidor, 'frequencia': frequencias.get(servidor.pk)} for servidor in servidores]
+    linhas = []
+    for servidor in servidores:
+        frequencia = frequencias.get(servidor.pk)
+        observacao_sugerida = observacao_licenca(servidor, mes, ano, frequencia.observacoes if frequencia else '')
+        linhas.append({'servidor': servidor, 'frequencia': frequencia, 'observacao_sugerida': observacao_sugerida})
     contexto = {
         'linhas': linhas,
         'mes': mes,
@@ -314,6 +356,15 @@ def folha_mensal(request, mes, ano):
 @login_required
 def relatorios(request):
     frequencias = Frequencia.objects.filter(servidor__in=servidores_permitidos(request.user))
+    escola_filtro = request.GET.get('escola', '')
+    mes_filtro = request.GET.get('mes', '')
+    ano_filtro = request.GET.get('ano', '')
+    if request.user.is_superuser and escola_filtro:
+        frequencias = frequencias.filter(servidor__escola_id=escola_filtro)
+    if mes_filtro:
+        frequencias = frequencias.filter(mes=mes_filtro)
+    if ano_filtro:
+        frequencias = frequencias.filter(ano=ano_filtro)
     agrupamento = ['mes', 'ano']
     if request.user.is_superuser:
         agrupamento.extend(['servidor__escola_id', 'servidor__escola__nome'])
@@ -343,7 +394,13 @@ def relatorios(request):
                 .select_related('servidor', 'usuario')
                 .order_by('-criado_em')[:4]
             )
-    return render(request, 'core/relatorios.html', {'folhas': folhas})
+    return render(request, 'core/relatorios.html', {
+        'folhas': folhas,
+        'escolas': Escola.objects.filter(ativa=True),
+        'meses': [(m, n) for m, n in Frequencia.MESES_CHOICES if m.isdigit() and int(m) <= 12],
+        'anos': [choice[0] for choice in Frequencia.ANO_CHOICES],
+        'filtros': {'escola': escola_filtro, 'mes': mes_filtro, 'ano': ano_filtro},
+    })
 
 
 @login_required
@@ -353,7 +410,12 @@ def relatorio_folha(request, mes, ano):
         frequencia.servidor_id: frequencia
         for frequencia in Frequencia.objects.filter(servidor__in=servidores, mes=mes, ano=ano)
     }
-    linhas = [{'servidor': servidor, 'frequencia': frequencias.get(servidor.pk)} for servidor in servidores]
+    linhas = []
+    for servidor in servidores:
+        frequencia = frequencias.get(servidor.pk)
+        if frequencia and not frequencia.observacoes and servidor.em_licenca_no_periodo(mes, ano):
+            frequencia.observacoes = servidor.licenca_tipo
+        linhas.append({'servidor': servidor, 'frequencia': frequencia})
     contexto = {
         'linhas': linhas,
         'mes': mes,
@@ -372,7 +434,12 @@ def relatorio_folha_pdf(request, mes, ano):
         frequencia.servidor_id: frequencia
         for frequencia in Frequencia.objects.filter(servidor__in=servidores, mes=mes, ano=ano)
     }
-    linhas = [{'servidor': servidor, 'frequencia': frequencias.get(servidor.pk)} for servidor in servidores]
+    linhas = []
+    for servidor in servidores:
+        frequencia = frequencias.get(servidor.pk)
+        if frequencia and not frequencia.observacoes and servidor.em_licenca_no_periodo(mes, ano):
+            frequencia.observacoes = servidor.licenca_tipo
+        linhas.append({'servidor': servidor, 'frequencia': frequencia})
     nome_mes = dict(Frequencia.MESES_CHOICES).get(mes, mes)
     escola_nome = escola.nome if escola else 'semed'
     nome_arquivo = f'Frequência Mensal ({nome_mes}/{ano}).pdf'

@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.urls import reverse
 
-from .models import TransferenciaServidor
+from .models import Frequencia, Servidor, TransferenciaServidor
 
 
 def escola_do_usuario(user):
@@ -17,13 +17,33 @@ def alertas_sgp(request):
     lidas = set(request.session.get('notificacoes_lidas', []))
     hoje = timezone.localdate()
     if hoje.day >= 15:
-        codigo = f'folha-{hoje.year}-{hoje.month}'
+        servidores = Servidor.objects.filter(ativo=True)
+        escola = escola_do_usuario(request.user)
+        if not request.user.is_superuser:
+            servidores = servidores.filter(escola=escola)
+        folha_processada = Frequencia.objects.filter(
+            servidor__in=servidores,
+            mes=str(hoje.month),
+            ano=str(hoje.year),
+        ).exists()
+
+        codigo = f'folha-atrasada-{hoje.year}-{hoje.month}'
+        if not folha_processada:
+            alertas.append({
+                'codigo': codigo,
+                'tipo': 'folha',
+                'titulo': 'Folha em atraso',
+                'texto': 'A folha de frequência precisa ser processada para este mês.',
+                'destino_url': reverse('folha_mensal', args=[str(hoje.month), str(hoje.year)]),
+                'lida': codigo in lidas,
+            })
+        codigo = f'envio-secretaria-{hoje.year}-{hoje.month}'
         alertas.append({
             'codigo': codigo,
             'tipo': 'folha',
-            'titulo': 'Entrega da folha',
-            'texto': 'A folha de frequência deve ser entregue a partir do dia 15 deste mês.',
-            'destino_url': reverse('folha_mensal', args=[str(hoje.month), str(hoje.year)]),
+            'titulo': 'Enviar à secretaria',
+            'texto': 'O relatório mensal deve ser enviado à secretaria até o dia 15.',
+            'destino_url': reverse('relatorio_folha', args=[str(hoje.month), str(hoje.year)]),
             'lida': codigo in lidas,
         })
 

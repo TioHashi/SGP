@@ -39,12 +39,17 @@ class ServidorForm(forms.ModelForm):
             'data_inicio',
             'data_saida',
             'motivo_inativo',
+            'licenca_tipo',
+            'licenca_inicio',
+            'licenca_fim',
         ]
         widgets = {
             'data_nascimento': forms.DateInput(attrs={'type': 'date'}),
             'data_admissao': forms.DateInput(attrs={'type': 'date'}),
             'data_inicio': forms.DateInput(attrs={'type': 'date'}),
             'data_saida': forms.DateInput(attrs={'type': 'date'}),
+            'licenca_inicio': forms.DateInput(attrs={'type': 'date'}),
+            'licenca_fim': forms.DateInput(attrs={'type': 'date'}),
         }
         labels = {
             'formacao': 'Formação',
@@ -55,6 +60,9 @@ class ServidorForm(forms.ModelForm):
             'data_inicio': 'Data de início',
             'data_saida': 'Data de saída',
             'motivo_inativo': 'Motivo da inatividade',
+            'licenca_tipo': 'Tipo de licença',
+            'licenca_inicio': 'Início da licença',
+            'licenca_fim': 'Fim da licença',
         }
 
     def __init__(self, *args, user=None, **kwargs):
@@ -78,6 +86,14 @@ class ServidorForm(forms.ModelForm):
             self.add_error('motivo_inativo', 'Informe o motivo quando o servidor estiver inativo.')
         if status_servidor == 'ativo':
             cleaned_data['motivo_inativo'] = ''
+            cleaned_data['licenca_tipo'] = ''
+            cleaned_data['licenca_inicio'] = None
+            cleaned_data['licenca_fim'] = None
+        if status_servidor == 'inativo' and motivo_inativo == 'Licenca':
+            if not cleaned_data.get('licenca_tipo'):
+                self.add_error('licenca_tipo', 'Informe o tipo da licença.')
+            if not cleaned_data.get('licenca_inicio'):
+                self.add_error('licenca_inicio', 'Informe a data de início da licença.')
         return cleaned_data
 
     def save(self, commit=True):

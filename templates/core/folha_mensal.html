@@ -43,7 +43,7 @@
               <span>Observações</span>
               <select class="mini-select" name="observacoes_{{ linha.servidor.pk }}">
                 {% for value,label in obs_choices %}
-                  <option value="{{ value }}" {% if linha.frequencia.observacoes == value %}selected{% endif %}>{{ label }}</option>
+                  <option value="{{ value }}" {% if linha.observacao_sugerida == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
             </label>

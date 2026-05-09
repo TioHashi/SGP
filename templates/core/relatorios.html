@@ -8,6 +8,40 @@
     <h1>Relatorios</h1>
   </section>
 
+  <form class="report-filter" method="get">
+    {% if request.user.is_superuser %}
+      <label>
+        Escola
+        <select name="escola" class="field-control">
+          <option value="">Todas</option>
+          {% for escola in escolas %}
+            <option value="{{ escola.pk }}" {% if filtros.escola == escola.pk|stringformat:'s' %}selected{% endif %}>{{ escola.nome }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    {% endif %}
+    <label>
+      Mês
+      <select name="mes" class="field-control">
+        <option value="">Todos</option>
+        {% for valor,nome in meses %}
+          <option value="{{ valor }}" {% if filtros.mes == valor %}selected{% endif %}>{{ nome }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      Ano
+      <select name="ano" class="field-control">
+        <option value="">Todos</option>
+        {% for valor in anos %}
+          <option value="{{ valor }}" {% if filtros.ano == valor %}selected{% endif %}>{{ valor }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit">Filtrar</button>
+    <a href="{% url 'relatorios' %}">Limpar</a>
+  </form>
+
   <section class="table-card">
     <table>
       <thead>
@@ -17,7 +51,6 @@
           <th>Registros</th>
           <th>Ultima atualizacao</th>
           {% if request.user.is_superuser %}<th>Alterações recentes</th>{% endif %}
-          <th></th>
           <th></th>
           <th></th>
         </tr>
@@ -43,12 +76,11 @@
               </td>
             {% endif %}
             <td><a href="{% url 'relatorio_folha' folha.mes folha.ano %}{{ folha.querystring }}">Abrir</a></td>
-            <td><a href="{% url 'folha_mensal' folha.mes folha.ano %}{{ folha.querystring }}">Editar folha</a></td>
             <td><a href="{% url 'relatorio_folha_pdf' folha.mes folha.ano %}{{ folha.querystring }}" target="_blank">PDF</a></td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="{% if request.user.is_superuser %}8{% else %}6{% endif %}">Nenhuma folha salva ainda.</td>
+            <td colspan="{% if request.user.is_superuser %}7{% else %}5{% endif %}">Nenhuma folha salva ainda.</td>
           </tr>
         {% endfor %}
       </tbody>

@@ -1,3 +1,6 @@
+import calendar
+from datetime import date
+
 from django.conf import settings
 from django.db import models
 
@@ -75,6 +78,13 @@ class Servidor(models.Model):
         ('Outros', 'Outros'),
     ]
 
+    LICENCA_CHOICES = [
+        ('', ''),
+        ('LICENCA PREMIO', 'Licença prêmio'),
+        ('LICENCA MATERNIDADE', 'Licença maternidade'),
+        ('LICENCA PARA ESTUDO', 'Licença para estudo'),
+    ]
+
     escola = models.ForeignKey(Escola, on_delete=models.PROTECT, related_name='servidores')
     nome = models.CharField(max_length=255, verbose_name='Nome completo')
     sexo = models.CharField(max_length=50, choices=SEXO_CHOICES, blank=True)
@@ -105,6 +115,9 @@ class Servidor(models.Model):
     conta = models.CharField(max_length=20, blank=True)
     ativo = models.BooleanField(default=True)
     motivo_inativo = models.CharField(max_length=30, choices=MOTIVO_INATIVO_CHOICES, blank=True)
+    licenca_tipo = models.CharField(max_length=40, choices=LICENCA_CHOICES, blank=True)
+    licenca_inicio = models.DateField(null=True, blank=True)
+    licenca_fim = models.DateField(null=True, blank=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
@@ -115,6 +128,39 @@ class Servidor(models.Model):
 
     def __str__(self):
         return self.nome
+
+    def calcular_fim_licenca(self):
+        meses = {
+            'LICENCA PREMIO': 3,
+            'LICENCA MATERNIDADE': 6,
+        }.get(self.licenca_tipo)
+        if not self.licenca_inicio or not meses:
+            return None
+
+        month = self.licenca_inicio.month - 1 + meses
+        year = self.licenca_inicio.year + month // 12
+        month = month % 12 + 1
+        day = min(self.licenca_inicio.day, calendar.monthrange(year, month)[1])
+        return date(year, month, day)
+
+    def save(self, *args, **kwargs):
+        if self.licenca_tipo in {'LICENCA PREMIO', 'LICENCA MATERNIDADE'} and self.licenca_inicio:
+            self.licenca_fim = self.calcular_fim_licenca()
+        elif self.licenca_tipo == 'LICENCA PARA ESTUDO':
+            self.licenca_fim = None
+        elif not self.licenca_tipo:
+            self.licenca_inicio = None
+            self.licenca_fim = None
+        super().save(*args, **kwargs)
+
+    def em_licenca_no_periodo(self, mes, ano):
+        if not self.licenca_tipo or not self.licenca_inicio:
+            return False
+        inicio_periodo = date(int(ano), int(mes), 1)
+        fim_periodo = date(int(ano), int(mes), calendar.monthrange(int(ano), int(mes))[1])
+        if self.licenca_fim:
+            return self.licenca_inicio <= fim_periodo and self.licenca_fim >= inicio_periodo
+        return self.licenca_inicio <= fim_periodo
 
 
 class TransferenciaServidor(models.Model):
