@@ -4,6 +4,7 @@ from django.db.models import Count, Max
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.http import content_disposition_header
 from django.utils.text import slugify
 
 from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
@@ -65,6 +66,14 @@ def dashboard(request):
         .annotate(total=Count('id'))
         .order_by('-total', 'cargo')[:10]
     )
+    max_funcoes = max([item['total'] for item in funcoes] or [1])
+    max_cargos = max([item['total'] for item in cargos] or [1])
+    for item in funcoes:
+        item['percentual'] = round((item['total'] / max_funcoes) * 100, 1)
+        item['percentual_css'] = int(round((item['total'] / max_funcoes) * 100))
+    for item in cargos:
+        item['percentual'] = round((item['total'] / max_cargos) * 100, 1)
+        item['percentual_css'] = int(round((item['total'] / max_cargos) * 100))
     total_ativos = servidores_ativos.count() or 1
     status_resumo = {
         'ativos': servidores_ativos.count(),
@@ -78,6 +87,7 @@ def dashboard(request):
             'label': item['vinculo'] or 'Nao informado',
             'total': item['total'],
             'percentual': round((item['total'] / total_vinculos) * 100, 1),
+            'percentual_css': int(round((item['total'] / total_vinculos) * 100)),
         }
         for item in vinculos
     ]
@@ -107,6 +117,7 @@ def dashboard(request):
         'status_resumo': status_resumo,
         'efetivos_total': vinculos_por_nome.get('Efetivo', 0),
         'temporarios_total': vinculos_por_nome.get('Temporario', 0),
+        'hoje': timezone.localdate(),
         'dashboard_data': dashboard_data,
     }
     return render(request, 'core/dashboard.html', contexto)
@@ -188,6 +199,16 @@ def transferencia_aceitar(request, pk):
         transferencia.save(update_fields=['status', 'respondido_por', 'respondido_em'])
         messages.success(request, f'{servidor.nome} foi transferido para {transferencia.escola_destino.nome}.')
     return redirect('dashboard')
+
+
+@login_required
+def notificacao_ler(request, codigo):
+    lidas = set(request.session.get('notificacoes_lidas', []))
+    lidas.add(codigo)
+    request.session['notificacoes_lidas'] = sorted(lidas)
+    request.session.modified = True
+    destino = request.GET.get('next') or 'dashboard'
+    return redirect(destino)
 
 
 @login_required
@@ -274,7 +295,7 @@ def relatorio_folha_pdf(request, mes, ano):
     escola = escola_do_usuario(request.user)
     nome_mes = dict(Frequencia.MESES_CHOICES).get(mes, mes)
     escola_nome = escola.nome if escola else 'semed'
-    nome_arquivo = f'folha-{slugify(escola_nome)}-{slugify(nome_mes)}-{ano}.pdf'
+    nome_arquivo = f'Frequência Mensal ({nome_mes}-{ano}).pdf'
     storage_path = f'folhas/{ano}/{mes}/{nome_arquivo}'
     pdf = folha_pdf_bytes(linhas, mes, ano, escola)
 
@@ -291,5 +312,5 @@ def relatorio_folha_pdf(request, mes, ano):
         )
 
     response = HttpResponse(pdf, content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="{nome_arquivo}"'
+    response['Content-Disposition'] = content_disposition_header(True, nome_arquivo)
     return response
