@@ -2,7 +2,7 @@ from io import BytesIO
 
 from django.conf import settings
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
@@ -39,7 +39,8 @@ def folha_pdf_bytes(linhas, mes, ano, escola=None):
         fontSize=9,
         leading=12,
     )
-    cell_style = ParagraphStyle('Cell', parent=styles['Normal'], fontSize=6.5, leading=8)
+    cell_style = ParagraphStyle('Cell', parent=styles['Normal'], alignment=TA_CENTER, fontSize=6.5, leading=8)
+    name_cell_style = ParagraphStyle('NameCell', parent=cell_style, alignment=TA_LEFT)
     header_style = ParagraphStyle('Header', parent=cell_style, alignment=TA_CENTER, fontName='Helvetica-Bold')
 
     nome_mes = dict(Frequencia.MESES_CHOICES).get(mes, mes)
@@ -98,7 +99,7 @@ def folha_pdf_bytes(linhas, mes, ano, escola=None):
         carga = servidor.carga_horaria
         data.append([
             Paragraph(str(index), cell_style),
-            Paragraph(text(servidor.nome), cell_style),
+            Paragraph(text(servidor.nome), name_cell_style),
             Paragraph(text(servidor.vinculo), cell_style),
             Paragraph(text(servidor.cargo), cell_style),
             Paragraph(text(servidor.funcao), cell_style),
@@ -114,8 +115,8 @@ def folha_pdf_bytes(linhas, mes, ano, escola=None):
         ('GRID', (0, 0), (-1, -1), 0.45, colors.black),
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f1f5f9')),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('ALIGN', (0, 0), (0, -1), 'CENTER'),
-        ('ALIGN', (6, 0), (8, -1), 'CENTER'),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (1, 1), (1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('TOPPADDING', (0, 0), (-1, -1), 4),

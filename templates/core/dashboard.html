@@ -9,7 +9,7 @@
     <div>
       <p>Bem-vindo, {{ request.user.username }}</p>
       <h1>{% if escola_atual %}{{ escola_atual.nome }}{% else %}Painel geral do SGP{% endif %}</h1>
-      <span>Indicadores filtrados automaticamente pelo acesso da escola.</span>
+      <span>Resumo funcional da escola e acompanhamento da folha.</span>
     </div>
     <div class="hero-actions">
       <a class="primary-link" href="{% url 'servidor_criar' %}">Novo servidor</a>
@@ -27,7 +27,7 @@
     {% endfor %}
   </section>
 
-  <section class="dashboard-strip">
+  <section class="dashboard-strip compact-strip">
     <article>
       <span>Efetivos</span>
       <strong>{{ efetivos_total }}</strong>
@@ -46,7 +46,7 @@
     </article>
   </section>
 
-  <section class="dashboard-layout">
+  <section class="dashboard-layout dashboard-main">
     <article class="chart-panel-app">
       <div class="panel-heading">
         <div>
@@ -70,22 +70,25 @@
       </div>
     </article>
 
-    <article class="chart-panel-app">
+    <article class="work-panel insight-panel">
       <div class="panel-heading">
         <div>
-          <p>Distribuicao por funcao</p>
-          <h2>Funcoes cadastradas</h2>
+          <p>Resumo útil</p>
+          <h2>Quadro da escola</h2>
         </div>
       </div>
-      <div class="chart-box chart-box-wide">
-        <canvas id="funcaoChart"></canvas>
+      <div class="insight-list">
+        <div><span>Servidores disponíveis para folha</span><strong>{{ status_resumo.ativos }}</strong></div>
+        <div><span>Cadastros fora da folha mensal</span><strong>{{ status_resumo.inativos }}</strong></div>
+        <div><span>Funções cadastradas</span><strong>{{ funcoes|length }}</strong></div>
+        <div><span>Cargos cadastrados</span><strong>{{ cargos|length }}</strong></div>
       </div>
     </article>
   </section>
 
   <section class="dashboard-layout dashboard-layout-secondary">
     <article class="work-panel">
-      <h2>Funcoes mais frequentes</h2>
+      <h2>Funções por quantidade</h2>
       {% if funcoes %}
         <div class="rank-list">
           {% for item in funcoes %}
@@ -101,7 +104,7 @@
     </article>
 
     <article class="work-panel">
-      <h2>Cargos mais frequentes</h2>
+      <h2>Cargos por quantidade</h2>
       {% if cargos %}
         <div class="rank-list">
           {% for item in cargos %}
@@ -117,24 +120,17 @@
     </article>
   </section>
 
-  <section class="dashboard-layout">
+  <section class="dashboard-layout single-panel">
     <article class="chart-panel-app wide-panel">
       <div class="panel-heading">
         <div>
-          <p>Quadro funcional</p>
+          <p>Distribuição visual</p>
           <h2>Servidores por cargo</h2>
         </div>
       </div>
       <div class="chart-box chart-box-wide">
         <canvas id="cargoChart"></canvas>
       </div>
-    </article>
-
-    <article class="work-panel insight-panel">
-      <h2>Resumo útil</h2>
-      <p>{{ status_resumo.ativos }} servidor(es) ativo(s) disponíveis para a folha.</p>
-      <p>{{ status_resumo.inativos }} cadastro(s) inativo(s) fora da folha mensal.</p>
-      <p>{{ funcoes|length }} função(ões) e {{ cargos|length }} cargo(s) com servidores cadastrados.</p>
     </article>
   </section>
 
@@ -153,20 +149,6 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { position: 'bottom' } }
-      }
-    });
-
-    new Chart(document.getElementById('funcaoChart'), {
-      type: 'bar',
-      data: {
-        labels: dashboardData.funcoes.labels,
-        datasets: [{ label: 'Servidores', data: dashboardData.funcoes.data, backgroundColor: '#1e5f74' }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
-        plugins: { legend: { display: false } }
       }
     });
 
