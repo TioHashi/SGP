@@ -4,7 +4,7 @@ from django.db.models import Count, Max
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.utils.http import content_disposition_header
+from django.utils.http import content_disposition_header, url_has_allowed_host_and_scheme
 from django.utils.text import slugify
 
 from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
@@ -149,7 +149,22 @@ def servidor_lista(request):
     busca = request.GET.get('q', '').strip()
     if busca:
         servidores = servidores.filter(nome__icontains=busca)
-    return render(request, 'core/servidor_lista.html', {'servidores': servidores, 'busca': busca})
+
+    transferencias_pendentes = TransferenciaServidor.objects.filter(status='pendente').select_related(
+        'servidor',
+        'escola_origem',
+        'escola_destino',
+    )
+    if not request.user.is_superuser:
+        escola = escola_do_usuario(request.user)
+        transferencias_pendentes = transferencias_pendentes.filter(escola_destino=escola)
+
+    contexto = {
+        'servidores': servidores,
+        'busca': busca,
+        'transferencias_pendentes': transferencias_pendentes,
+    }
+    return render(request, 'core/servidor_lista.html', contexto)
 
 
 @login_required
@@ -227,7 +242,10 @@ def notificacao_ler(request, codigo):
     lidas.add(codigo)
     request.session['notificacoes_lidas'] = sorted(lidas)
     request.session.modified = True
-    return redirect(request.GET.get('next') or 'dashboard')
+    destino = request.GET.get('next')
+    if destino and url_has_allowed_host_and_scheme(destino, allowed_hosts={request.get_host()}):
+        return redirect(destino)
+    return redirect('dashboard')
 
 
 @login_required

@@ -16,6 +16,28 @@
     <button type="submit">Buscar</button>
   </form>
 
+  {% if transferencias_pendentes %}
+    <section class="transfer-inbox" id="transferencias">
+      <div>
+        <p>Transferências aguardando aceite</p>
+        <h2>Entrada de servidores</h2>
+      </div>
+      <div class="transfer-inbox-grid">
+        {% for transferencia in transferencias_pendentes %}
+          <article>
+            <span>{{ transferencia.criado_em|date:'d/m/Y H:i' }}</span>
+            <strong>{{ transferencia.servidor.nome }}</strong>
+            <p>{{ transferencia.escola_origem.nome }} → {{ transferencia.escola_destino.nome }}</p>
+            <form method="post" action="{% url 'transferencia_aceitar' transferencia.pk %}">
+              {% csrf_token %}
+              <button type="submit">Aceitar transferência</button>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
   <section class="table-card">
     <table>
       <thead>

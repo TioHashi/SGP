@@ -28,7 +28,7 @@
         </div>
         {% for alerta in alertas_sgp %}
           <article class="{% if alerta.lida %}is-read{% else %}is-unread{% endif %}">
-            <a href="{% url 'notificacao_ler' alerta.codigo %}?next={{ request.path }}">
+            <a href="{% url 'notificacao_ler' alerta.codigo %}?next={{ alerta.destino_url|urlencode }}">
               <b>{{ alerta.titulo }}</b>
               <p>{{ alerta.texto }}</p>
             </a>

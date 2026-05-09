@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.urls import reverse
 
 from .models import TransferenciaServidor
 
@@ -22,6 +23,7 @@ def alertas_sgp(request):
             'tipo': 'folha',
             'titulo': 'Entrega da folha',
             'texto': 'A folha de frequência deve ser entregue a partir do dia 15 deste mês.',
+            'destino_url': reverse('folha_mensal', args=[str(hoje.month), str(hoje.year)]),
             'lida': codigo in lidas,
         })
 
@@ -42,6 +44,7 @@ def alertas_sgp(request):
             'titulo': 'Transferência pendente',
             'texto': f'{transferencia.servidor.nome} enviado de {transferencia.escola_origem.nome} para {transferencia.escola_destino.nome}.',
             'transferencia': transferencia,
+            'destino_url': f"{reverse('servidor_lista')}#transferencias",
             'lida': codigo in lidas,
         })
 
