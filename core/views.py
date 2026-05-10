@@ -10,7 +10,7 @@ from django.utils.text import slugify
 from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
 from .firebase import upload_pdf
 from .models import Escola, FolhaAlteracao, FolhaExclusao, FolhaPdf, Frequencia, Servidor, ServidorObservacao, TransferenciaServidor
-from .pdfs import folha_pdf_bytes
+from .pdfs import folha_pdf_bytes, servidor_ficha_pdf_bytes
 
 
 def escola_do_usuario(user):
@@ -178,6 +178,24 @@ def servidor_lista(request):
     return render(request, 'core/servidor_lista.html', contexto)
 
 
+def servidor_ficha_contexto(request, servidor):
+    campos_historico = {'Cargo', 'Carga horária', 'Carga horaria', 'Função', 'Funcao'}
+    eventos = []
+    for alteracao in servidor.alteracoes_folha.select_related('usuario').filter(campo__in=campos_historico).order_by('-criado_em')[:16]:
+        eventos.append({
+            'data': alteracao.criado_em,
+            'titulo': alteracao.campo,
+            'texto': f'De "{alteracao.valor_anterior or "vazio"}" para "{alteracao.valor_novo or "vazio"}".',
+            'tipo': 'Alteração',
+        })
+
+    return {
+        'servidor': servidor,
+        'eventos': eventos,
+        'observacoes': servidor.observacoes_funcionais.select_related('criado_por'),
+    }
+
+
 @login_required
 def servidor_ficha(request, pk):
     servidor = get_object_or_404(servidores_permitidos(request.user), pk=pk)
@@ -190,22 +208,18 @@ def servidor_ficha(request, pk):
             messages.error(request, 'Escreva uma observação antes de salvar.')
         return redirect('servidor_ficha', pk=servidor.pk)
 
-    campos_historico = {'Cargo', 'Carga horária', 'Carga horaria', 'Função', 'Funcao'}
-    eventos = []
-    for alteracao in servidor.alteracoes_folha.select_related('usuario').filter(campo__in=campos_historico).order_by('-criado_em')[:16]:
-        eventos.append({
-            'data': alteracao.criado_em,
-            'titulo': alteracao.campo,
-            'texto': f'De "{alteracao.valor_anterior or "vazio"}" para "{alteracao.valor_novo or "vazio"}".',
-            'tipo': 'Alteração',
-        })
+    return render(request, 'core/servidor_ficha.html', servidor_ficha_contexto(request, servidor))
 
-    observacoes = servidor.observacoes_funcionais.select_related('criado_por')
-    return render(request, 'core/servidor_ficha.html', {
-        'servidor': servidor,
-        'eventos': eventos,
-        'observacoes': observacoes,
-    })
+
+@login_required
+def servidor_ficha_pdf(request, pk):
+    servidor = get_object_or_404(servidores_permitidos(request.user), pk=pk)
+    contexto = servidor_ficha_contexto(request, servidor)
+    pdf = servidor_ficha_pdf_bytes(servidor, list(contexto['observacoes']), contexto['eventos'])
+    nome_arquivo = f'{servidor.nome} - {servidor.escola.nome}.pdf'
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = content_disposition_header(True, nome_arquivo)
+    return response
 
 
 @login_required

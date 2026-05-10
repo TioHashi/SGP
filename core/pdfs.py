@@ -124,3 +124,139 @@ def folha_pdf_bytes(linhas, mes, ano, escola=None):
     story.append(table)
     doc.build(story)
     return buffer.getvalue()
+
+
+def servidor_ficha_pdf_bytes(servidor, observacoes, eventos):
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=22,
+        leftMargin=22,
+        topMargin=22,
+        bottomMargin=22,
+    )
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('FichaTitle', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=15, leading=18)
+    subtitle_style = ParagraphStyle('FichaSub', parent=styles['Normal'], textColor=colors.HexColor('#667085'), fontSize=8.5, leading=11)
+    section_style = ParagraphStyle('FichaSection', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9.5, leading=12)
+    label_style = ParagraphStyle('FichaLabel', parent=styles['Normal'], textColor=colors.HexColor('#667085'), fontSize=7.5, leading=9)
+    value_style = ParagraphStyle('FichaValue', parent=styles['Normal'], fontSize=8.2, leading=10)
+    small_style = ParagraphStyle('FichaSmall', parent=styles['Normal'], fontSize=7.5, leading=9)
+
+    def pair(label, value):
+        return [Paragraph(label, label_style), Paragraph(text(value) or '-', value_style)]
+
+    story = [
+        Paragraph('Ficha funcional', subtitle_style),
+        Paragraph(text(servidor.nome), title_style),
+        Paragraph(f'{text(servidor.escola.nome)} · {text(servidor.cargo) or "Cargo não informado"}', subtitle_style),
+        Spacer(1, 8),
+    ]
+
+    resumo = Table([[
+        Paragraph(f'<b>Status</b><br/>{ "Ativo" if servidor.ativo else "Inativo" }', value_style),
+        Paragraph(f'<b>Vínculo</b><br/>{ text(servidor.vinculo) or "-" }', value_style),
+        Paragraph(f'<b>Carga horária</b><br/>{ text(servidor.carga_horaria) or "-" }', value_style),
+    ]], colWidths=[175, 175, 175])
+    resumo.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#d7dde5')),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f7fafc')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 7),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
+    ]))
+    story.extend([resumo, Spacer(1, 8)])
+
+    blocos = [
+        ('Identificação', [
+            pair('CPF', servidor.cpf),
+            pair('RG', servidor.rg),
+            pair('Sexo', servidor.sexo),
+            pair('Nascimento', servidor.data_nascimento.strftime('%d/%m/%Y') if servidor.data_nascimento else '-'),
+            pair('Telefone', servidor.telefone),
+            pair('Email', servidor.email),
+        ]),
+        ('Endereço', [
+            pair('Logradouro', servidor.logradouro),
+            pair('Número', servidor.numero),
+            pair('Bairro / Vila', servidor.bairro),
+            pair('Zona', servidor.zona),
+            pair('Município', servidor.municipio),
+            pair('Estado', servidor.estado),
+            pair('CEP', servidor.cep),
+        ]),
+        ('Formação e lotação', [
+            pair('Escolaridade', servidor.escolaridade),
+            pair('Formação', servidor.formacao),
+            pair('Instituição', servidor.instituicao),
+            pair('Função', servidor.funcao),
+            pair('Cargo', servidor.cargo),
+        ]),
+        ('Datas', [
+            pair('Admissão', servidor.data_admissao.strftime('%d/%m/%Y') if servidor.data_admissao else '-'),
+            pair('Início', servidor.data_inicio.strftime('%d/%m/%Y') if servidor.data_inicio else '-'),
+            pair('Saída', servidor.data_saida.strftime('%d/%m/%Y') if servidor.data_saida else '-'),
+        ]),
+    ]
+
+    rows = []
+    for titulo, pares in blocos:
+        rows.append([Paragraph(titulo, section_style), ''])
+        for index in range(0, len(pares), 2):
+            esquerda = pares[index]
+            direita = pares[index + 1] if index + 1 < len(pares) else ['', '']
+            rows.append([
+                Paragraph(f'<b>{esquerda[0].getPlainText()}</b>: {esquerda[1].getPlainText()}', small_style),
+                Paragraph(f'<b>{direita[0].getPlainText()}</b>: {direita[1].getPlainText()}', small_style) if direita[0] else '',
+            ])
+    dados_table = Table(rows, colWidths=[262, 262])
+    dados_table.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), 0.35, colors.HexColor('#d7dde5')),
+        ('SPAN', (0, 0), (-1, 0)),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#eef6f8')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    story.extend([dados_table, Spacer(1, 8)])
+
+    obs_rows = [[Paragraph('Observações da ficha', section_style)]]
+    for observacao in observacoes[:5]:
+        data = observacao.criado_em.strftime('%d/%m/%Y %H:%M')
+        obs_rows.append([Paragraph(f'<b>{data}</b> · {text(observacao.texto)}', small_style)])
+    if len(obs_rows) == 1:
+        obs_rows.append([Paragraph('Nenhuma observação manual registrada.', small_style)])
+    obs_table = Table(obs_rows, colWidths=[525])
+    obs_table.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), 0.35, colors.HexColor('#d7dde5')),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#eef6f8')),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    story.extend([obs_table, Spacer(1, 8)])
+
+    evento_rows = [[Paragraph('Alterações funcionais', section_style)]]
+    for evento in eventos[:5]:
+        data = evento['data'].strftime('%d/%m/%Y %H:%M')
+        evento_rows.append([Paragraph(f'<b>{data} · {text(evento["titulo"])}</b><br/>{text(evento["texto"])}', small_style)])
+    if len(evento_rows) == 1:
+        evento_rows.append([Paragraph('Nenhuma alteração de cargo, função ou carga horária registrada.', small_style)])
+    evento_table = Table(evento_rows, colWidths=[525])
+    evento_table.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), 0.35, colors.HexColor('#d7dde5')),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#eef6f8')),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    story.append(evento_table)
+    doc.build(story)
+    return buffer.getvalue()

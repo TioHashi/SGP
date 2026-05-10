@@ -12,6 +12,7 @@
     <div class="profile-actions">
       <a class="primary-link" href="{% url 'servidor_editar' servidor.pk %}">Editar cadastro</a>
       <a class="toolbar-button" href="{% url 'servidor_transferir' servidor.pk %}">Transferir</a>
+      <a class="toolbar-button" href="{% url 'servidor_ficha_pdf' servidor.pk %}" target="_blank">Salvar ficha</a>
       <button class="toolbar-button" type="button" onclick="window.print()">Imprimir ficha</button>
     </div>
   </section>
