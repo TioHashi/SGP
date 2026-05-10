@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 db.sqlite3
+data/
 staticfiles/
 .env
 .env.production

@@ -75,6 +75,6 @@ docker compose down
 
 ## Observacao sobre os dados
 
-O banco principal do Django fica persistido no volume Docker `sgp_data` em `/app/data/db.sqlite3`. Sempre que registros importantes sao criados, editados ou excluidos, o sistema sincroniza esses dados com o Firestore. Ao gerar folhas, os PDFs sao enviados para o Firebase Storage.
+O banco principal do Django fica persistido na pasta `data/db.sqlite3` da instancia, montada dentro do container em `/app/data/db.sqlite3`. Sempre que registros importantes sao criados, editados ou excluidos, o sistema sincroniza esses dados com o Firestore. Ao gerar folhas, os PDFs sao enviados para o Firebase Storage.
 
 Se quiser que o Firestore seja o banco principal, sem SQLite, isso exige uma refatoracao maior porque o Django nao usa Firestore como banco relacional nativo.
