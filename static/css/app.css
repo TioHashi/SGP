@@ -2179,6 +2179,8 @@ td a {
   body {
     background: #fff;
     color: #17202a;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
   .topbar,
@@ -2209,17 +2211,19 @@ td a {
   .server-profile-hero,
   .profile-card,
   .detail-card {
-    background: #fff !important;
     box-shadow: none !important;
     break-inside: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
   .server-profile-hero {
     align-items: start;
+    background: linear-gradient(135deg, #ffffff, #edf7f3) !important;
     border: 1px solid var(--line);
     border-left: 5px solid var(--brand-2);
-    margin-bottom: 6px;
-    padding: 9px 11px;
+    margin-bottom: 4px;
+    padding: 7px 9px;
   }
 
   .server-profile-hero p,
@@ -2228,7 +2232,7 @@ td a {
   }
 
   .server-profile-hero h1 {
-    font-size: 16pt;
+    font-size: 14pt;
     line-height: 1.08;
     margin: 2px 0;
   }
@@ -2241,23 +2245,28 @@ td a {
 
   .profile-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin-bottom: 5px;
+    margin-bottom: 4px;
   }
 
   .detail-sections,
   .functional-notes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 5px;
+    margin-top: 4px;
   }
 
   .profile-card,
   .detail-card {
+    background: var(--panel) !important;
     border-radius: 6px;
-    padding: 7px 8px;
+    padding: 5px 6px;
+  }
+
+  .profile-card.highlight {
+    border-left: 4px solid var(--brand);
   }
 
   .profile-card strong {
-    font-size: 13pt;
+    font-size: 11pt;
     margin-top: 2px;
   }
 
@@ -2269,39 +2278,40 @@ td a {
   }
 
   .detail-card h2 {
-    font-size: 9.5pt;
-    margin-bottom: 4px;
+    font-size: 8.5pt;
+    margin-bottom: 3px;
   }
 
   .detail-card dl,
   .note-list,
   .event-list {
     gap: 3px;
-    margin-top: 5px;
+    margin-top: 3px;
   }
 
   .detail-card dl div {
     gap: 2px;
-    grid-template-columns: 72px minmax(0, 1fr);
-    padding-top: 3px;
+    grid-template-columns: 68px minmax(0, 1fr);
+    padding-top: 2px;
   }
 
   .detail-card dd,
   .note-list p,
   .event-list p,
   .empty-note {
-    font-size: 8pt;
-    line-height: 1.18;
+    font-size: 7.3pt;
+    line-height: 1.12;
   }
 
   .note-list div,
   .event-list div {
+    background: #f7fafc !important;
     border-radius: 5px;
-    padding: 4px 5px;
+    padding: 3px 4px;
   }
 
   .event-list strong {
-    font-size: 8.5pt;
+    font-size: 7.8pt;
   }
 }
 
