@@ -511,6 +511,12 @@ a {
   gap: 10px;
 }
 
+.profile-actions button {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
 .hero-actions .toolbar-button {
   background: #eef6f8;
   color: var(--brand);
@@ -2162,17 +2168,25 @@ td a {
 @media print {
   @page {
     margin: 7mm;
+    size: A4 portrait;
+  }
+
+  @page frequency-report {
+    margin: 7mm;
     size: A4 landscape;
   }
 
   body {
     background: #fff;
+    color: #17202a;
   }
 
   .topbar,
   .site-footer,
   .messages,
   .report-toolbar,
+  .profile-actions,
+  .note-form,
   .screen-only-cell,
   .screen-only-col {
     display: none;
@@ -2184,11 +2198,110 @@ td a {
   }
 
   .print-sheet {
+    page: frequency-report;
     border: 0;
     border-radius: 0;
     padding: 0;
     max-width: none;
     width: 100%;
+  }
+
+  .server-profile-hero,
+  .profile-card,
+  .detail-card {
+    background: #fff !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .server-profile-hero {
+    align-items: start;
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--brand-2);
+    margin-bottom: 6px;
+    padding: 9px 11px;
+  }
+
+  .server-profile-hero p,
+  .server-profile-hero span {
+    font-size: 8.5pt;
+  }
+
+  .server-profile-hero h1 {
+    font-size: 16pt;
+    line-height: 1.08;
+    margin: 2px 0;
+  }
+
+  .profile-grid,
+  .detail-sections,
+  .functional-notes {
+    gap: 5px;
+  }
+
+  .profile-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 5px;
+  }
+
+  .detail-sections,
+  .functional-notes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 5px;
+  }
+
+  .profile-card,
+  .detail-card {
+    border-radius: 6px;
+    padding: 7px 8px;
+  }
+
+  .profile-card strong {
+    font-size: 13pt;
+    margin-top: 2px;
+  }
+
+  .profile-card span,
+  .detail-card dt,
+  .note-list span,
+  .event-list span {
+    font-size: 7.5pt;
+  }
+
+  .detail-card h2 {
+    font-size: 9.5pt;
+    margin-bottom: 4px;
+  }
+
+  .detail-card dl,
+  .note-list,
+  .event-list {
+    gap: 3px;
+    margin-top: 5px;
+  }
+
+  .detail-card dl div {
+    gap: 2px;
+    grid-template-columns: 72px minmax(0, 1fr);
+    padding-top: 3px;
+  }
+
+  .detail-card dd,
+  .note-list p,
+  .event-list p,
+  .empty-note {
+    font-size: 8pt;
+    line-height: 1.18;
+  }
+
+  .note-list div,
+  .event-list div {
+    border-radius: 5px;
+    padding: 4px 5px;
+  }
+
+  .event-list strong {
+    font-size: 8.5pt;
   }
 }
 
