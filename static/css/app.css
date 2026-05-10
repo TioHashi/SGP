@@ -1269,6 +1269,25 @@ a {
   flex: 0 0 auto;
 }
 
+.result-summary {
+  align-items: center;
+  background: rgba(30, 95, 116, 0.08);
+  border: 1px solid rgba(30, 95, 116, 0.16);
+  border-radius: 8px;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 700;
+  gap: 5px;
+  margin: -2px 0 14px;
+  padding: 9px 12px;
+}
+
+.result-summary strong {
+  color: var(--brand);
+  font-size: 1rem;
+}
+
 .search-form input,
 .field-control {
   border: 1px solid var(--line);

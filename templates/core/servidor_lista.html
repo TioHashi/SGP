@@ -41,6 +41,13 @@
     <button type="submit">Buscar</button>
   </form>
 
+  {% if request.user.is_superuser %}
+    <div class="result-summary" aria-live="polite">
+      <strong>{{ total_resultados }}</strong>
+      resultado{{ total_resultados|pluralize }} encontrado{{ total_resultados|pluralize }} após a busca e filtros.
+    </div>
+  {% endif %}
+
   {% if transferencias_pendentes %}
     <section class="transfer-inbox" id="transferencias">
       <div>

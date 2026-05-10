@@ -200,6 +200,7 @@ def servidor_lista(request):
         'vinculos': Servidor.VINCULO_CHOICES,
         'vinculo_filtro': vinculo_filtro,
         'status_filtro': status_filtro,
+        'total_resultados': servidores.count(),
         'transferencias_pendentes': transferencias_pendentes,
     }
     return render(request, 'core/servidor_lista.html', contexto)
