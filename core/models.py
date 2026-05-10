@@ -57,10 +57,13 @@ class Servidor(models.Model):
 
     CARGO_CHOICES = [
         ('Secretario(a)', 'Secretario(a)'),
+        ('Secretaria de Educacao', 'Secretária de Educação'),
         ('Assistente Administrativo', 'Assistente Administrativo'),
         ('Auxiliar Administrativo', 'Auxiliar Administrativo'),
         ('ASG', 'ASG'),
         ('Coordenador(a)', 'Coordenador(a)'),
+        ('Coordenador(a) Pedagogico', 'Coordenador(a) Pedagógico'),
+        ('Coordenador(a) de Sistemas', 'Coordenador(a) de Sistemas'),
         ('Professor(a)', 'Professor(a)'),
         ('Vigia', 'Vigia'),
         ('Merendeira', 'Merendeira'),

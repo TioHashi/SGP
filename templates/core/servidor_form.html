@@ -93,6 +93,11 @@
         {% include 'core/partials/form_field.html' with field=form.status_servidor span='status-field' %}
         {% include 'core/partials/form_field.html' with field=form.motivo_inativo %}
       </div>
+      <datalist id="funcoes-sugeridas">
+        {% for funcao in form.FUNCAO_SUGESTOES %}
+          <option value="{{ funcao }}"></option>
+        {% endfor %}
+      </datalist>
     </section>
 
     <section class="form-section">
@@ -118,13 +123,53 @@
   <script>
     const statusRadios = document.querySelectorAll('input[name="status_servidor"]');
     const motivoField = document.querySelector('[name="motivo_inativo"]')?.closest('.form-field');
+    const cargoInput = document.querySelector('[name="cargo"]');
+    const funcaoInput = document.querySelector('[name="funcao"]');
+    const cargaInput = document.querySelector('[name="carga_horaria"]');
+    const cargaField = cargaInput?.closest('.form-field');
+    const cargaAuto30 = new Set([
+      'diretor',
+      'diretora',
+      'diretor(a)',
+      'professor',
+      'professora',
+      'professor(a)',
+      'coordenador pedagogico',
+      'coordenador(a) pedagogico',
+      'coordenador de sistemas',
+      'coordenador(a) de sistemas',
+    ]);
+    function normalizarFuncao(value) {
+      return (value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    }
     function syncMotivoInativo() {
       const selected = document.querySelector('input[name="status_servidor"]:checked')?.value;
       if (motivoField) {
         motivoField.classList.toggle('is-hidden', selected !== 'inativo');
       }
     }
+    function syncCargaHoraria() {
+      if (!cargaInput) return;
+      const usaCargaAuto = cargaAuto30.has(normalizarFuncao(cargoInput?.value)) || cargaAuto30.has(normalizarFuncao(funcaoInput?.value));
+      if (usaCargaAuto) {
+        cargaInput.value = '30';
+        cargaInput.readOnly = true;
+        cargaInput.placeholder = '30';
+        cargaField?.classList.add('is-auto-filled');
+      } else {
+        cargaInput.readOnly = false;
+        cargaInput.placeholder = 'Informe a carga horária';
+        cargaField?.classList.remove('is-auto-filled');
+      }
+    }
     statusRadios.forEach((radio) => radio.addEventListener('change', syncMotivoInativo));
+    [cargoInput, funcaoInput].forEach((input) => input?.addEventListener('input', syncCargaHoraria));
+    [cargoInput, funcaoInput].forEach((input) => input?.addEventListener('change', syncCargaHoraria));
     syncMotivoInativo();
+    syncCargaHoraria();
   </script>
 {% endblock %}

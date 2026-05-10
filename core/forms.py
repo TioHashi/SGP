@@ -4,6 +4,26 @@ from .models import Escola, Frequencia, Servidor
 
 
 class ServidorForm(forms.ModelForm):
+    FUNCAO_SUGESTOES = [
+        'Diretor(a)',
+        'Professor(a)',
+        'Coordenador(a) Pedagógico',
+        'Coordenador(a) de Sistemas',
+        'Secretária de Educação',
+    ]
+    CARGA_AUTOMATICA_30 = {
+        'diretor',
+        'diretora',
+        'diretor(a)',
+        'professor',
+        'professora',
+        'professor(a)',
+        'coordenador pedagogico',
+        'coordenador(a) pedagogico',
+        'coordenador de sistemas',
+        'coordenador(a) de sistemas',
+    }
+
     status_servidor = forms.ChoiceField(
         choices=[('ativo', 'Ativo'), ('inativo', 'Inativo')],
         label='Status',
@@ -50,6 +70,7 @@ class ServidorForm(forms.ModelForm):
             'data_saida': forms.DateInput(attrs={'type': 'date'}),
             'licenca_inicio': forms.DateInput(attrs={'type': 'date'}),
             'licenca_fim': forms.DateInput(attrs={'type': 'date'}),
+            'funcao': forms.TextInput(attrs={'list': 'funcoes-sugeridas'}),
         }
         labels = {
             'formacao': 'Formação',
@@ -74,14 +95,52 @@ class ServidorForm(forms.ModelForm):
             field.widget.attrs.setdefault('class', 'field-control')
 
         self.fields['status_servidor'].widget.attrs['class'] = 'status-radio-group'
+        self.fields['carga_horaria'].help_text = 'Diretor(a), Professor(a), Coordenador(a) Pedagógico e Coordenador(a) de Sistemas recebem 30 horas automaticamente.'
 
         if user and not user.is_superuser:
             self.fields.pop('escola')
+
+    @staticmethod
+    def normalizar_funcao(valor):
+        return (
+            (valor or '')
+            .strip()
+            .lower()
+            .replace('á', 'a')
+            .replace('à', 'a')
+            .replace('â', 'a')
+            .replace('ã', 'a')
+            .replace('é', 'e')
+            .replace('ê', 'e')
+            .replace('í', 'i')
+            .replace('ó', 'o')
+            .replace('ô', 'o')
+            .replace('õ', 'o')
+            .replace('ú', 'u')
+            .replace('ç', 'c')
+        )
+
+    def usa_carga_automatica(self, cargo, funcao):
+        cargo_normalizado = self.normalizar_funcao(cargo)
+        funcao_normalizada = self.normalizar_funcao(funcao)
+        return (
+            cargo_normalizado in self.CARGA_AUTOMATICA_30
+            or funcao_normalizada in self.CARGA_AUTOMATICA_30
+        )
 
     def clean(self):
         cleaned_data = super().clean()
         status_servidor = cleaned_data.get('status_servidor')
         motivo_inativo = cleaned_data.get('motivo_inativo')
+        cargo = cleaned_data.get('cargo')
+        funcao = cleaned_data.get('funcao')
+        carga_horaria = cleaned_data.get('carga_horaria')
+
+        if self.usa_carga_automatica(cargo, funcao):
+            cleaned_data['carga_horaria'] = 30
+        elif not carga_horaria:
+            self.add_error('carga_horaria', 'Informe a carga horária para este cargo ou função.')
+
         if status_servidor == 'inativo' and not motivo_inativo:
             self.add_error('motivo_inativo', 'Informe o motivo quando o servidor estiver inativo.')
         if status_servidor == 'ativo':
