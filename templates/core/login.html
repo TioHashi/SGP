@@ -1,42 +1,78 @@
 {% load static %}
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SGP - Login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SGP | Login</title>
   <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20260509b">
+  <link rel="stylesheet" href="{% static 'css/login.css' %}?v=20260510">
 </head>
-<body class="login-page">
-  <div class="login-art-panel" aria-hidden="true">
-    <img src="{% static 'img/sgp-vertical.png' %}" alt="">
+<body class="sgp-login-body">
+  <div class="login-bubbles" aria-hidden="true">
+    <span style="--posicao: 5%; --tamanho: 60px; --tempo: 14s"></span>
+    <span style="--posicao: 16%; --tamanho: 95px; --tempo: 18s"></span>
+    <span style="--posicao: 28%; --tamanho: 45px; --tempo: 12s"></span>
+    <span style="--posicao: 43%; --tamanho: 80px; --tempo: 17s"></span>
+    <span style="--posicao: 58%; --tamanho: 55px; --tempo: 13s"></span>
+    <span style="--posicao: 70%; --tamanho: 110px; --tempo: 20s"></span>
+    <span style="--posicao: 84%; --tamanho: 65px; --tempo: 16s"></span>
+    <span style="--posicao: 94%; --tamanho: 42px; --tempo: 11s"></span>
   </div>
-  <main class="login-shell">
-    <section class="login-card" aria-label="Login do SGP">
-      <div class="login-brand">
-        <img class="login-logo" src="{% static 'img/sgp-vertical.png' %}" alt="SGP Sistema de Gerenciamento de Pessoas">
-        <div>
-          <p>Sistema de Gestão de Pessoas</p>
-          <h1>Entrar</h1>
+
+  <main class="sgp-login-card" id="cardLogin">
+    <button class="theme-btn" id="themeBtn" type="button" title="Alternar modo claro e escuro">Noite</button>
+
+    <section class="login-brand-panel">
+      <div class="login-card-light" aria-hidden="true"></div>
+      <div class="logo-box">
+        <img src="{% static 'img/sgp-vertical.png' %}" alt="Logo SGP - Sistema de Gerenciamento de Pessoas">
+      </div>
+      <div>
+        <h1>SGP</h1>
+        <p>Sistema de Gerenciamento de Pessoas</p>
+      </div>
+    </section>
+
+    <section class="welcome">
+      <h2>Bem-vindo(a) de volta!</h2>
+      <div class="welcome-line" aria-hidden="true"></div>
+      <p>Faça login para acessar o sistema</p>
+    </section>
+
+    {% if form.errors %}
+      <div class="login-alert">Usuário ou senha inválidos.</div>
+    {% endif %}
+
+    <form method="post" class="login-form" id="loginForm">
+      {% csrf_token %}
+      <div class="field">
+        <label for="{{ form.username.id_for_label }}"><span>Usuario</span></label>
+        <div class="input-wrap">
+          {{ form.username }}
         </div>
       </div>
 
-      {% if form.errors %}
-        <div class="alert">Usuario ou senha invalidos.</div>
-      {% endif %}
+      <div class="field">
+        <label for="{{ form.password.id_for_label }}"><span>Senha</span></label>
+        <div class="input-wrap">
+          {{ form.password }}
+          <button class="eye" id="toggleSenha" type="button">Mostrar</button>
+        </div>
+      </div>
 
-      <form method="post" class="login-form">
-        {% csrf_token %}
-        <label for="{{ form.username.id_for_label }}">Usuario</label>
-        {{ form.username }}
+      <button class="login-btn" type="submit">
+        <span>Entrar</span>
+        <span aria-hidden="true">→</span>
+      </button>
+    </form>
 
-        <label for="{{ form.password.id_for_label }}">Senha</label>
-        {{ form.password }}
-
-        <button type="submit">Entrar</button>
-      </form>
+    <section class="footer-secure">
+      <div class="shield">SGP</div>
+      <p>Segurança • Gestão • Eficiência</p>
     </section>
   </main>
+
+  <script src="{% static 'js/login.js' %}?v=20260510"></script>
 </body>
 </html>

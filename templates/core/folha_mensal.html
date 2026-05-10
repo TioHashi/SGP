@@ -13,7 +13,7 @@
 
   <form method="post">
     {% csrf_token %}
-    <section class="frequency-editor">
+    <section class="frequency-editor {% if folha_extra %}has-exclusion{% endif %}">
       <div class="frequency-editor-head">
         <span>N.</span>
         <span>Servidor</span>
@@ -25,6 +25,7 @@
         <span>Carga</span>
         <span>Faltas</span>
         <span>Observações</span>
+        {% if folha_extra %}<span>Excluir</span>{% endif %}
       </div>
       {% for linha in linhas %}
         <article class="frequency-row">
@@ -46,6 +47,12 @@
               {% endfor %}
             </select>
           </div>
+          {% if folha_extra %}
+            <label class="exclude-check" title="Excluir servidor desta folha extra">
+              <input type="checkbox" name="excluir_{{ linha.servidor.pk }}">
+              <span>Excluir</span>
+            </label>
+          {% endif %}
         </article>
       {% empty %}
         <article class="frequency-row empty-row">Nenhum servidor ativo encontrado para esta escola.</article>

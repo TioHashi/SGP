@@ -9,7 +9,7 @@ from django.utils.text import slugify
 
 from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
 from .firebase import upload_pdf
-from .models import Escola, FolhaAlteracao, FolhaPdf, Frequencia, Servidor, TransferenciaServidor
+from .models import Escola, FolhaAlteracao, FolhaExclusao, FolhaPdf, Frequencia, Servidor, TransferenciaServidor
 from .pdfs import folha_pdf_bytes
 
 
@@ -266,9 +266,10 @@ def folha_selecionar(request):
     servidores = servidores_permitidos(request.user)
     meses = []
     nomes = dict(Frequencia.MESES_CHOICES)
-    for mes in range(1, 13):
+    meses_disponiveis = list(range(1, 13)) + [13, 14]
+    for mes in meses_disponiveis:
         mes_str = str(mes)
-        iniciado = int(ano) < hoje.year or (int(ano) == hoje.year and mes <= hoje.month)
+        iniciado = mes > 12 or int(ano) < hoje.year or (int(ano) == hoje.year and mes <= hoje.month)
         registros = Frequencia.objects.filter(servidor__in=servidores, mes=mes_str, ano=ano).count()
         processada = bool(registros) or (ano == '2026' and mes <= 5)
         meses.append({
@@ -289,21 +290,67 @@ def folha_selecionar(request):
 def observacao_licenca(servidor, mes, ano, observacao_atual=''):
     if observacao_atual:
         return observacao_atual
+    if int(mes) > 12:
+        return observacao_atual
     if servidor.em_licenca_no_periodo(mes, ano):
         return servidor.licenca_tipo
     return observacao_atual
 
 
+def folha_extra(mes):
+    return str(mes) in {'13', '14'}
+
+
 @login_required
 def folha_mensal(request, mes, ano):
     servidores, escola = servidores_folha_request(request)
+    especial = folha_extra(mes)
+    exclusoes_ids = set(
+        FolhaExclusao.objects
+        .filter(servidor__in=servidores, mes=mes, ano=ano)
+        .values_list('servidor_id', flat=True)
+    )
+    if especial:
+        servidores_processamento = servidores
+        servidores_visiveis = [servidor for servidor in servidores if servidor.pk not in exclusoes_ids]
+    else:
+        servidores_processamento = servidores
+        servidores_visiveis = servidores
     frequencias = {
         frequencia.servidor_id: frequencia
-        for frequencia in Frequencia.objects.filter(servidor__in=servidores, mes=mes, ano=ano)
+        for frequencia in Frequencia.objects.filter(servidor__in=servidores_processamento, mes=mes, ano=ano)
     }
 
     if request.method == 'POST':
-        for servidor in servidores:
+        excluidos_post = {
+            int(key.replace('excluir_', ''))
+            for key in request.POST
+            if key.startswith('excluir_')
+        } if especial else set()
+        for servidor_id in excluidos_post:
+            servidor = next((item for item in servidores_processamento if item.pk == servidor_id), None)
+            if servidor:
+                FolhaExclusao.objects.update_or_create(
+                    servidor=servidor,
+                    mes=mes,
+                    ano=ano,
+                    defaults={'motivo': 'Adiantamento já solicitado', 'criado_por': request.user},
+                )
+                Frequencia.objects.filter(servidor=servidor, mes=mes, ano=ano).delete()
+                FolhaAlteracao.objects.create(
+                    escola=servidor.escola,
+                    servidor=servidor,
+                    mes=mes,
+                    ano=ano,
+                    campo='Exclusão',
+                    valor_anterior='Na folha',
+                    valor_novo='Excluído da folha extra',
+                    usuario=request.user,
+                )
+
+        for servidor in servidores_processamento:
+            if servidor.pk in excluidos_post or (especial and servidor.pk in exclusoes_ids):
+                continue
             faltas = int(request.POST.get(f'faltas_{servidor.pk}') or 0)
             observacoes = observacao_licenca(servidor, mes, ano, request.POST.get(f'observacoes_{servidor.pk}', ''))
             frequencia_atual = frequencias.get(servidor.pk)
@@ -337,7 +384,7 @@ def folha_mensal(request, mes, ano):
         return redirect(f"{redirect('folha_mensal', mes=mes, ano=ano).url}{querystring_escola(escola)}")
 
     linhas = []
-    for servidor in servidores:
+    for servidor in servidores_visiveis:
         frequencia = frequencias.get(servidor.pk)
         observacao_sugerida = observacao_licenca(servidor, mes, ano, frequencia.observacoes if frequencia else '')
         linhas.append({'servidor': servidor, 'frequencia': frequencia, 'observacao_sugerida': observacao_sugerida})
@@ -349,6 +396,7 @@ def folha_mensal(request, mes, ano):
         'obs_choices': Frequencia.OBS_CHOICES,
         'escola': escola,
         'querystring': querystring_escola(escola),
+        'folha_extra': especial,
     }
     return render(request, 'core/folha_mensal.html', contexto)
 
@@ -397,7 +445,7 @@ def relatorios(request):
     return render(request, 'core/relatorios.html', {
         'folhas': folhas,
         'escolas': Escola.objects.filter(ativa=True),
-        'meses': [(m, n) for m, n in Frequencia.MESES_CHOICES if m.isdigit() and int(m) <= 12],
+        'meses': Frequencia.MESES_CHOICES,
         'anos': [choice[0] for choice in Frequencia.ANO_CHOICES],
         'filtros': {'escola': escola_filtro, 'mes': mes_filtro, 'ano': ano_filtro},
     })
@@ -406,6 +454,11 @@ def relatorios(request):
 @login_required
 def relatorio_folha(request, mes, ano):
     servidores, escola = servidores_folha_request(request)
+    if folha_extra(mes):
+        servidores = [
+            servidor for servidor in servidores
+            if not FolhaExclusao.objects.filter(servidor=servidor, mes=mes, ano=ano).exists()
+        ]
     frequencias = {
         frequencia.servidor_id: frequencia
         for frequencia in Frequencia.objects.filter(servidor__in=servidores, mes=mes, ano=ano)
@@ -430,6 +483,11 @@ def relatorio_folha(request, mes, ano):
 @login_required
 def relatorio_folha_pdf(request, mes, ano):
     servidores, escola = servidores_folha_request(request)
+    if folha_extra(mes):
+        servidores = [
+            servidor for servidor in servidores
+            if not FolhaExclusao.objects.filter(servidor=servidor, mes=mes, ano=ano).exists()
+        ]
     frequencias = {
         frequencia.servidor_id: frequencia
         for frequencia in Frequencia.objects.filter(servidor__in=servidores, mes=mes, ano=ano)

@@ -3,10 +3,10 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from .firebase import delete_model, sync_model
-from .models import Escola, FolhaAlteracao, FolhaPdf, Frequencia, PerfilUsuario, Servidor, TransferenciaServidor
+from .models import Escola, FolhaAlteracao, FolhaExclusao, FolhaPdf, Frequencia, PerfilUsuario, Servidor, TransferenciaServidor
 
 
-SYNC_MODELS = (Escola, PerfilUsuario, Servidor, Frequencia, FolhaPdf, FolhaAlteracao, TransferenciaServidor, get_user_model())
+SYNC_MODELS = (Escola, PerfilUsuario, Servidor, Frequencia, FolhaPdf, FolhaAlteracao, FolhaExclusao, TransferenciaServidor, get_user_model())
 
 
 @receiver(post_save)

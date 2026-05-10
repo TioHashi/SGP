@@ -1064,6 +1064,22 @@ a {
     minmax(108px, 1fr);
 }
 
+.frequency-editor.has-exclusion .frequency-editor-head,
+.frequency-editor.has-exclusion .frequency-row {
+  grid-template-columns:
+    28px
+    minmax(110px, 1.25fr)
+    minmax(108px, 1.15fr)
+    minmax(58px, 0.62fr)
+    minmax(74px, 0.78fr)
+    minmax(74px, 0.78fr)
+    minmax(76px, 0.78fr)
+    48px
+    54px
+    minmax(96px, 0.92fr)
+    62px;
+}
+
 .frequency-editor-head {
   background: #f8fafc;
   color: var(--muted);
@@ -1104,6 +1120,23 @@ a {
   font-size: inherit;
   min-height: 30px;
   width: 100%;
+}
+
+.exclude-check {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.exclude-check input {
+  accent-color: var(--accent);
+}
+
+.exclude-check span {
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 800;
 }
 
 .empty-row {
@@ -1243,13 +1276,13 @@ td a {
 
 .server-table-card th:nth-child(1),
 .server-table-card td:nth-child(1) {
-  text-align: right;
+  text-align: left;
   width: 24%;
 }
 
 .server-table-card th:nth-child(2),
 .server-table-card td:nth-child(2) {
-  text-align: right;
+  text-align: left;
   width: 23%;
 }
 
@@ -1519,20 +1552,20 @@ td a {
 .locked-action {
   border-radius: 6px;
   display: inline-flex;
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 800;
   justify-content: center;
-  min-height: 32px;
-  min-width: 118px;
-  padding: 7px 10px;
+  min-height: 28px;
+  min-width: 98px;
+  padding: 5px 8px;
   white-space: nowrap;
 }
 
 .month-actions .primary-link,
 .month-actions .toolbar-button {
-  font-size: 0.82rem;
-  min-height: 32px;
-  padding: 7px 10px;
+  font-size: 0.74rem;
+  min-height: 28px;
+  padding: 5px 8px;
   white-space: nowrap;
 }
 

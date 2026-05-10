@@ -281,3 +281,21 @@ class FolhaAlteracao(models.Model):
 
     def __str__(self):
         return f'{self.servidor.nome} - {self.campo} - {self.get_mes_display()}/{self.ano}'
+
+
+class FolhaExclusao(models.Model):
+    servidor = models.ForeignKey(Servidor, on_delete=models.CASCADE, related_name='exclusoes_folha')
+    mes = models.CharField(max_length=2, choices=Frequencia.MESES_CHOICES)
+    ano = models.CharField(max_length=4, choices=Frequencia.ANO_CHOICES)
+    motivo = models.CharField(max_length=160, blank=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['servidor__nome']
+        unique_together = ('servidor', 'mes', 'ano')
+        verbose_name = 'exclusão da folha'
+        verbose_name_plural = 'exclusões das folhas'
+
+    def __str__(self):
+        return f'{self.servidor.nome} excluído de {self.get_mes_display()}/{self.ano}'

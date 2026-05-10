@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Escola, FolhaAlteracao, FolhaPdf, Frequencia, PerfilUsuario, Servidor, TransferenciaServidor
+from .models import Escola, FolhaAlteracao, FolhaExclusao, FolhaPdf, Frequencia, PerfilUsuario, Servidor, TransferenciaServidor
 
 
 @admin.register(Escola)
@@ -48,6 +48,14 @@ class FolhaAlteracaoAdmin(admin.ModelAdmin):
     list_filter = ('ano', 'mes', 'escola', 'campo')
     search_fields = ('servidor__nome', 'escola__nome', 'valor_anterior', 'valor_novo')
     autocomplete_fields = ('escola', 'servidor', 'usuario')
+
+
+@admin.register(FolhaExclusao)
+class FolhaExclusaoAdmin(admin.ModelAdmin):
+    list_display = ('servidor', 'mes', 'ano', 'motivo', 'criado_por', 'criado_em')
+    list_filter = ('ano', 'mes', 'servidor__escola')
+    search_fields = ('servidor__nome', 'motivo')
+    autocomplete_fields = ('servidor', 'criado_por')
 
 
 @admin.register(TransferenciaServidor)
