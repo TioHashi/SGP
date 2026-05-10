@@ -1,16 +1,19 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Max, Q
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.http import content_disposition_header, url_has_allowed_host_and_scheme
 from django.utils.text import slugify
+from playwright.sync_api import sync_playwright
 
 from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
 from .firebase import upload_pdf
 from .models import Escola, FolhaAlteracao, FolhaExclusao, FolhaPdf, Frequencia, Servidor, ServidorObservacao, TransferenciaServidor
-from .pdfs import folha_pdf_bytes, servidor_ficha_pdf_bytes
+from .pdfs import folha_pdf_bytes
 
 
 def escola_do_usuario(user):
@@ -215,7 +218,24 @@ def servidor_ficha(request, pk):
 def servidor_ficha_pdf(request, pk):
     servidor = get_object_or_404(servidores_permitidos(request.user), pk=pk)
     contexto = servidor_ficha_contexto(request, servidor)
-    pdf = servidor_ficha_pdf_bytes(servidor, list(contexto['observacoes']), contexto['eventos'])
+    html = render_to_string('core/servidor_ficha.html', contexto, request=request)
+    css_path = settings.BASE_DIR / 'static' / 'css' / 'app.css'
+    css = css_path.read_text(encoding='utf-8') if css_path.exists() else ''
+    html = html.replace('</head>', f'<style>{css}</style></head>')
+
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.set_content(html, wait_until='networkidle')
+        page.emulate_media(media='print')
+        pdf = page.pdf(
+            format='A4',
+            print_background=True,
+            prefer_css_page_size=True,
+            margin={'top': '0', 'right': '0', 'bottom': '0', 'left': '0'},
+        )
+        browser.close()
+
     nome_arquivo = f'{servidor.nome} - {servidor.escola.nome}.pdf'
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = content_disposition_header(True, nome_arquivo)
