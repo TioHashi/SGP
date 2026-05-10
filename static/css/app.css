@@ -1210,6 +1210,21 @@ a {
   width: 100%;
 }
 
+.observation-stack {
+  display: grid;
+  gap: 4px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.prolabore-hours {
+  display: none;
+}
+
+.prolabore-hours.is-visible {
+  display: block;
+}
+
 .exclude-check {
   align-items: center;
   display: inline-flex;
@@ -1235,16 +1250,23 @@ a {
 
 .search-form {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 14px;
 }
 
 .search-form select {
-  flex: 0 1 280px;
+  flex: 1 1 150px;
+  min-width: 140px;
 }
 
 .search-form input {
-  flex: 1;
+  flex: 2 1 220px;
+  min-width: 180px;
+}
+
+.search-form button {
+  flex: 0 0 auto;
 }
 
 .search-form input,

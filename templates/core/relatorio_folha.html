@@ -69,7 +69,7 @@
             <td class="center-cell">{% if linha.servidor.carga_horaria == 200 %}200{% else %}-{% endif %}</td>
             <td class="center-cell">{% if linha.servidor.carga_horaria and linha.servidor.carga_horaria != 200 %}{{ linha.servidor.carga_horaria }}{% else %}-{% endif %}</td>
             <td>{{ linha.frequencia.faltas|default:'' }}</td>
-            <td class="observation-cell">{{ linha.frequencia.get_observacoes_display|upper|default:'' }}</td>
+            <td class="observation-cell">{{ linha.observacao_relatorio|linebreaksbr }}</td>
           </tr>
         {% empty %}
           <tr>

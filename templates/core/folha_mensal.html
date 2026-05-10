@@ -40,12 +40,23 @@
           <div>
             <input class="mini-field" type="number" min="0" max="31" name="faltas_{{ linha.servidor.pk }}" value="{{ linha.frequencia.faltas|default:0 }}">
           </div>
-          <div>
-            <select class="mini-select" name="observacoes_{{ linha.servidor.pk }}">
+          <div class="observation-stack">
+            <select class="mini-select observation-select" name="observacoes_{{ linha.servidor.pk }}" data-hours-target="prolabore-{{ linha.servidor.pk }}">
               {% for value,label in obs_choices %}
                 <option value="{{ value }}" {% if linha.observacao_sugerida == value %}selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
+            <input
+              class="mini-field prolabore-hours"
+              id="prolabore-{{ linha.servidor.pk }}"
+              type="number"
+              min="1"
+              max="300"
+              name="pro_labore_horas_{{ linha.servidor.pk }}"
+              value="{{ linha.pro_labore_horas|default:'' }}"
+              placeholder="Horas"
+              aria-label="Horas de Pró-Labore"
+            >
           </div>
           {% if folha_extra %}
             <label class="exclude-check" title="Excluir servidor desta folha extra">
@@ -64,4 +75,19 @@
       <button type="submit">Salvar folha</button>
     </div>
   </form>
+
+  <script>
+    document.querySelectorAll('.observation-select').forEach((select) => {
+      const input = document.getElementById(select.dataset.hoursTarget);
+      const toggleHours = () => {
+        if (!input) return;
+        const visible = select.value === 'PRO-LABORE';
+        input.classList.toggle('is-visible', visible);
+        input.required = visible;
+        if (!visible) input.value = '';
+      };
+      select.addEventListener('change', toggleHours);
+      toggleHours();
+    });
+  </script>
 {% endblock %}

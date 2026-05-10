@@ -1,4 +1,5 @@
 from io import BytesIO
+from html import escape
 
 from django.conf import settings
 from reportlab.lib import colors
@@ -12,6 +13,10 @@ from .models import Frequencia
 
 def text(value):
     return str(value or '')
+
+
+def paragraph_text(value):
+    return escape(text(value)).replace('\n', '<br/>')
 
 
 def image_or_empty(path, width, height):
@@ -97,17 +102,18 @@ def folha_pdf_bytes(linhas, mes, ano, escola=None):
         servidor = linha['servidor']
         frequencia = linha['frequencia']
         carga = servidor.carga_horaria
+        observacao = linha.get('observacao_relatorio') or (frequencia.observacoes_relatorio() if frequencia else '')
         data.append([
             Paragraph(str(index), cell_style),
-            Paragraph(text(servidor.nome), name_cell_style),
-            Paragraph(text(servidor.vinculo), cell_style),
-            Paragraph(text(servidor.cargo), cell_style),
-            Paragraph(text(servidor.funcao), cell_style),
-            Paragraph(text(servidor.escolaridade), cell_style),
+            Paragraph(paragraph_text(servidor.nome), name_cell_style),
+            Paragraph(paragraph_text(servidor.vinculo), cell_style),
+            Paragraph(paragraph_text(servidor.cargo), cell_style),
+            Paragraph(paragraph_text(servidor.funcao), cell_style),
+            Paragraph(paragraph_text(servidor.escolaridade), cell_style),
             Paragraph('200' if carga == 200 else '-', cell_style),
             Paragraph(str(carga) if carga and carga != 200 else '-', cell_style),
             Paragraph(text(getattr(frequencia, 'faltas', '')), cell_style),
-            Paragraph(text(frequencia.get_observacoes_display()).upper() if frequencia else '', cell_style),
+            Paragraph(paragraph_text(observacao), cell_style),
         ])
 
     table = Table(data, colWidths=[22, 190, 52, 88, 90, 68, 34, 34, 42, 110], repeatRows=1)

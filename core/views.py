@@ -163,9 +163,21 @@ def servidor_lista(request):
     servidores = servidores_permitidos(request.user)
     busca = request.GET.get('q', '').strip()
     escola_filtro = request.GET.get('escola', '').strip()
+    cargo_filtro = request.GET.get('cargo', '').strip()
+    vinculo_filtro = request.GET.get('vinculo', '').strip()
+    status_filtro = request.GET.get('status', '').strip()
     escolas = Escola.objects.filter(ativa=True)
-    if request.user.is_superuser and escola_filtro:
-        servidores = servidores.filter(escola_id=escola_filtro)
+    if request.user.is_superuser:
+        if escola_filtro:
+            servidores = servidores.filter(escola_id=escola_filtro)
+        if cargo_filtro:
+            servidores = servidores.filter(cargo=cargo_filtro)
+        if vinculo_filtro:
+            servidores = servidores.filter(vinculo=vinculo_filtro)
+        if status_filtro == 'ativo':
+            servidores = servidores.filter(ativo=True)
+        elif status_filtro == 'inativo':
+            servidores = servidores.filter(ativo=False)
     if busca:
         servidores = servidores.filter(nome__icontains=busca)
 
@@ -183,6 +195,11 @@ def servidor_lista(request):
         'busca': busca,
         'escolas': escolas,
         'escola_filtro': escola_filtro,
+        'cargos': Servidor.CARGO_CHOICES,
+        'cargo_filtro': cargo_filtro,
+        'vinculos': Servidor.VINCULO_CHOICES,
+        'vinculo_filtro': vinculo_filtro,
+        'status_filtro': status_filtro,
         'transferencias_pendentes': transferencias_pendentes,
     }
     return render(request, 'core/servidor_lista.html', contexto)
@@ -213,6 +230,17 @@ def servidor_ficha(request, pk):
         texto = request.POST.get('observacao_manual', '').strip()
         if texto:
             ServidorObservacao.objects.create(servidor=servidor, texto=texto, criado_por=request.user)
+            hoje = timezone.localdate()
+            FolhaAlteracao.objects.create(
+                escola=servidor.escola,
+                servidor=servidor,
+                mes=str(hoje.month),
+                ano=str(hoje.year),
+                campo='Observação geral',
+                valor_anterior='',
+                valor_novo=texto[:120],
+                usuario=request.user,
+            )
             messages.success(request, 'Observação adicionada à ficha do servidor.')
         else:
             messages.error(request, 'Escreva uma observação antes de salvar.')
@@ -253,7 +281,18 @@ def servidor_ficha_pdf(request, pk):
 def servidor_criar(request):
     form = ServidorForm(request.POST or None, user=request.user)
     if request.method == 'POST' and form.is_valid():
-        form.save()
+        servidor = form.save()
+        hoje = timezone.localdate()
+        FolhaAlteracao.objects.create(
+            escola=servidor.escola,
+            servidor=servidor,
+            mes=str(hoje.month),
+            ano=str(hoje.year),
+            campo='Servidor',
+            valor_anterior='',
+            valor_novo='Servidor cadastrado',
+            usuario=request.user,
+        )
         messages.success(request, 'Servidor cadastrado com sucesso.')
         return redirect('servidor_lista')
     return render(request, 'core/servidor_form.html', {'form': form, 'titulo': 'Cadastrar servidor'})
@@ -264,7 +303,34 @@ def servidor_editar(request, pk):
     servidor = get_object_or_404(servidores_permitidos(request.user), pk=pk)
     form = ServidorForm(request.POST or None, instance=servidor, user=request.user)
     if request.method == 'POST' and form.is_valid():
-        form.save()
+        campos_monitorados = [
+            ('cargo', 'Cargo'),
+            ('funcao', 'Função'),
+            ('carga_horaria', 'Carga horária'),
+            ('vinculo', 'Vínculo'),
+            ('ativo', 'Status'),
+            ('motivo_inativo', 'Motivo inativo'),
+            ('licenca_tipo', 'Licença'),
+            ('licenca_inicio', 'Início da licença'),
+            ('licenca_fim', 'Fim da licença'),
+        ]
+        anteriores = {campo: getattr(servidor, campo) for campo, _ in campos_monitorados}
+        servidor = form.save()
+        hoje = timezone.localdate()
+        for campo, rotulo in campos_monitorados:
+            valor_anterior = anteriores[campo]
+            valor_novo = getattr(servidor, campo)
+            if valor_anterior != valor_novo:
+                FolhaAlteracao.objects.create(
+                    escola=servidor.escola,
+                    servidor=servidor,
+                    mes=str(hoje.month),
+                    ano=str(hoje.year),
+                    campo=rotulo,
+                    valor_anterior=str(valor_anterior or ''),
+                    valor_novo=str(valor_novo or ''),
+                    usuario=request.user,
+                )
         messages.success(request, 'Servidor atualizado com sucesso.')
         return redirect('servidor_lista')
     return render(request, 'core/servidor_form.html', {'form': form, 'titulo': 'Editar servidor', 'servidor': servidor})
@@ -414,6 +480,15 @@ def folha_mensal(request, mes, ano):
             for key in request.POST
             if key.startswith('excluir_')
         } if especial else set()
+        for servidor in servidores_processamento:
+            if servidor.pk in excluidos_post or (especial and servidor.pk in exclusoes_ids):
+                continue
+            observacoes_post = observacao_licenca(servidor, mes, ano, request.POST.get(f'observacoes_{servidor.pk}', ''))
+            horas_post = request.POST.get(f'pro_labore_horas_{servidor.pk}', '').strip()
+            if observacoes_post == 'PRO-LABORE' and not horas_post:
+                messages.error(request, f'Informe as horas de Pró-Labore para {servidor.nome}.')
+                return redirect(f"{redirect('folha_mensal', mes=mes, ano=ano).url}{querystring_escola(escola)}")
+
         for servidor_id in excluidos_post:
             servidor = next((item for item in servidores_processamento if item.pk == servidor_id), None)
             if servidor:
@@ -440,6 +515,9 @@ def folha_mensal(request, mes, ano):
                 continue
             faltas = int(request.POST.get(f'faltas_{servidor.pk}') or 0)
             observacoes = observacao_licenca(servidor, mes, ano, request.POST.get(f'observacoes_{servidor.pk}', ''))
+            pro_labore_horas = None
+            if observacoes == 'PRO-LABORE':
+                pro_labore_horas = int(request.POST.get(f'pro_labore_horas_{servidor.pk}') or 0)
             frequencia_atual = frequencias.get(servidor.pk)
             alteracoes = []
             if frequencia_atual:
@@ -447,14 +525,21 @@ def folha_mensal(request, mes, ano):
                     alteracoes.append(('Faltas', str(frequencia_atual.faltas), str(faltas)))
                 if frequencia_atual.observacoes != observacoes:
                     alteracoes.append(('Observações', frequencia_atual.observacoes, observacoes))
-            elif faltas or observacoes:
-                alteracoes.append(('Registro', '', 'Folha preenchida'))
+                if frequencia_atual.pro_labore_horas != pro_labore_horas:
+                    alteracoes.append(('Pró-Labore', str(frequencia_atual.pro_labore_horas or ''), str(pro_labore_horas or '')))
+            else:
+                if faltas:
+                    alteracoes.append(('Faltas', '', str(faltas)))
+                if observacoes:
+                    alteracoes.append(('Observações', '', observacoes))
+                if pro_labore_horas:
+                    alteracoes.append(('Pró-Labore', '', str(pro_labore_horas)))
 
             Frequencia.objects.update_or_create(
                 servidor=servidor,
                 mes=mes,
                 ano=ano,
-                defaults={'faltas': faltas, 'observacoes': observacoes},
+                defaults={'faltas': faltas, 'observacoes': observacoes, 'pro_labore_horas': pro_labore_horas},
             )
             for campo, anterior, novo in alteracoes:
                 FolhaAlteracao.objects.create(
@@ -474,7 +559,12 @@ def folha_mensal(request, mes, ano):
     for servidor in servidores_visiveis:
         frequencia = frequencias.get(servidor.pk)
         observacao_sugerida = observacao_licenca(servidor, mes, ano, frequencia.observacoes if frequencia else '')
-        linhas.append({'servidor': servidor, 'frequencia': frequencia, 'observacao_sugerida': observacao_sugerida})
+        linhas.append({
+            'servidor': servidor,
+            'frequencia': frequencia,
+            'observacao_sugerida': observacao_sugerida,
+            'pro_labore_horas': frequencia.pro_labore_horas if frequencia else '',
+        })
     contexto = {
         'linhas': linhas,
         'mes': mes,
@@ -526,6 +616,7 @@ def relatorios(request):
             folha['alteracoes'] = list(
                 FolhaAlteracao.objects
                 .filter(escola_id=escola_id, mes=folha['mes'], ano=folha['ano'])
+                .exclude(campo='Registro')
                 .select_related('servidor', 'usuario')
                 .order_by('-criado_em')[:4]
             )
@@ -555,7 +646,11 @@ def relatorio_folha(request, mes, ano):
         frequencia = frequencias.get(servidor.pk)
         if frequencia and not frequencia.observacoes and servidor.em_licenca_no_periodo(mes, ano):
             frequencia.observacoes = servidor.licenca_tipo
-        linhas.append({'servidor': servidor, 'frequencia': frequencia})
+        linhas.append({
+            'servidor': servidor,
+            'frequencia': frequencia,
+            'observacao_relatorio': frequencia.observacoes_relatorio() if frequencia else '',
+        })
     contexto = {
         'linhas': linhas,
         'mes': mes,
@@ -577,11 +672,23 @@ def relatorio_folha_excluir(request, mes, ano):
         messages.error(request, 'Selecione uma escola para excluir a folha.')
         return redirect('relatorios')
 
-    frequencias_removidas, _ = Frequencia.objects.filter(
+    frequencias_queryset = Frequencia.objects.filter(
         servidor__in=servidores,
         mes=mes,
         ano=ano,
-    ).delete()
+    ).select_related('servidor', 'servidor__escola')
+    for frequencia in frequencias_queryset:
+        FolhaAlteracao.objects.create(
+            escola=frequencia.servidor.escola,
+            servidor=frequencia.servidor,
+            mes=mes,
+            ano=ano,
+            campo='Folha excluída',
+            valor_anterior='Processada',
+            valor_novo='Não processada',
+            usuario=request.user,
+        )
+    frequencias_removidas, _ = frequencias_queryset.delete()
     FolhaExclusao.objects.filter(
         servidor__in=servidores,
         mes=mes,
@@ -617,7 +724,11 @@ def relatorio_folha_pdf(request, mes, ano):
         frequencia = frequencias.get(servidor.pk)
         if frequencia and not frequencia.observacoes and servidor.em_licenca_no_periodo(mes, ano):
             frequencia.observacoes = servidor.licenca_tipo
-        linhas.append({'servidor': servidor, 'frequencia': frequencia})
+        linhas.append({
+            'servidor': servidor,
+            'frequencia': frequencia,
+            'observacao_relatorio': frequencia.observacoes_relatorio() if frequencia else '',
+        })
     nome_mes = dict(Frequencia.MESES_CHOICES).get(mes, mes)
     escola_nome = escola.nome if escola else 'SEMED'
     nome_arquivo = f'Frequência Mensal - {escola_nome} ({nome_mes}-{ano}).pdf'

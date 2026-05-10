@@ -219,7 +219,7 @@ class Frequencia(models.Model):
         ('LICENCA PARA ESTUDO', 'Licenca para estudo'),
         ('FERIAS', 'Ferias'),
         ('FALTA', 'Falta'),
-        ('PRO-LABORE', 'Pro-labore'),
+        ('PRO-LABORE', 'Pró-Labore'),
         ('DIARIA', 'Diaria'),
         ('DOBRA DE TURNO', 'Dobra de turno'),
         ('ATESTADO MEDICO', 'Atestado medico'),
@@ -234,6 +234,7 @@ class Frequencia(models.Model):
     ano = models.CharField(max_length=4, choices=ANO_CHOICES)
     faltas = models.PositiveSmallIntegerField(default=0)
     observacoes = models.CharField(max_length=80, choices=OBS_CHOICES, blank=True)
+    pro_labore_horas = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='Horas de pró-labore')
     atualizado_em = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -244,6 +245,12 @@ class Frequencia(models.Model):
 
     def __str__(self):
         return f'{self.servidor.nome} - {self.get_mes_display()}/{self.ano}'
+
+    def observacoes_relatorio(self):
+        if self.observacoes == 'PRO-LABORE':
+            horas = f'\n{self.pro_labore_horas}h' if self.pro_labore_horas else ''
+            return f'{self.get_observacoes_display()}{horas}'
+        return self.get_observacoes_display()
 
 
 class FolhaPdf(models.Model):

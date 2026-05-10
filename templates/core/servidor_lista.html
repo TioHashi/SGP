@@ -12,6 +12,7 @@
   </section>
 
   <form class="search-form" method="get">
+    <input type="search" name="q" value="{{ busca }}" placeholder="Buscar por nome">
     {% if request.user.is_superuser %}
       <select name="escola" class="field-control">
         <option value="">Todas as escolas</option>
@@ -19,8 +20,24 @@
           <option value="{{ escola.pk }}" {% if escola_filtro == escola.pk|stringformat:'s' %}selected{% endif %}>{{ escola.nome }}</option>
         {% endfor %}
       </select>
+      <select name="cargo" class="field-control">
+        <option value="">Todos os cargos</option>
+        {% for value,label in cargos %}
+          <option value="{{ value }}" {% if cargo_filtro == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="vinculo" class="field-control">
+        <option value="">Todos os vínculos</option>
+        {% for value,label in vinculos %}
+          <option value="{{ value }}" {% if vinculo_filtro == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="field-control">
+        <option value="">Todos os status</option>
+        <option value="ativo" {% if status_filtro == 'ativo' %}selected{% endif %}>Ativos</option>
+        <option value="inativo" {% if status_filtro == 'inativo' %}selected{% endif %}>Inativos</option>
+      </select>
     {% endif %}
-    <input type="search" name="q" value="{{ busca }}" placeholder="Buscar por nome">
     <button type="submit">Buscar</button>
   </form>
 
