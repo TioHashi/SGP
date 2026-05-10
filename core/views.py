@@ -262,11 +262,15 @@ def notificacao_ler(request, codigo):
 @login_required
 def folha_selecionar(request):
     ano = request.GET.get('ano') or str(timezone.localdate().year)
+    escola = escola_folha_request(request)
     hoje = timezone.localdate()
     servidores = servidores_permitidos(request.user)
+    if request.user.is_superuser and escola:
+        servidores = servidores.filter(escola=escola)
     meses = []
     nomes = dict(Frequencia.MESES_CHOICES)
-    meses_disponiveis = list(range(1, 13)) + [13, 14]
+    meses_disponiveis = [1, 2, 3, 4, 5, 6, 14, 7, 8, 9, 10, 11, 13, 12]
+    querystring = querystring_escola(escola)
     for mes in meses_disponiveis:
         mes_str = str(mes)
         iniciado = mes > 12 or int(ano) < hoje.year or (int(ano) == hoje.year and mes <= hoje.month)
@@ -279,11 +283,14 @@ def folha_selecionar(request):
             'iniciado': iniciado,
             'processada': processada,
             'registros': registros,
+            'querystring': querystring,
         })
     return render(request, 'core/folha_selecionar.html', {
         'ano': ano,
         'anos': [choice[0] for choice in Frequencia.ANO_CHOICES],
         'meses': meses,
+        'escola': escola,
+        'escolas': Escola.objects.filter(ativa=True),
     })
 
 
@@ -505,17 +512,16 @@ def relatorio_folha_pdf(request, mes, ano):
     storage_path = f'folhas/{ano}/{mes}/{nome_storage}'
     pdf = folha_pdf_bytes(linhas, mes, ano, escola)
 
-    enviado = upload_pdf(storage_path, pdf)
-    if enviado:
-        FolhaPdf.objects.create(
-            mes=mes,
-            ano=ano,
-            escola=escola,
-            storage_path=storage_path,
-            nome_arquivo=nome_arquivo,
-            tamanho_bytes=len(pdf),
-            criado_por=request.user,
-        )
+    upload_pdf(storage_path, pdf)
+    FolhaPdf.objects.create(
+        mes=mes,
+        ano=ano,
+        escola=escola,
+        storage_path=storage_path,
+        nome_arquivo=nome_arquivo,
+        tamanho_bytes=len(pdf),
+        criado_por=request.user,
+    )
 
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = content_disposition_header(True, nome_arquivo)

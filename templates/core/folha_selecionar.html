@@ -9,6 +9,15 @@
       <h1>Gerenciar folha</h1>
     </div>
     <form class="year-filter" method="get">
+      {% if request.user.is_superuser %}
+        <label for="escola">Escola</label>
+        <select id="escola" name="escola" class="field-control" onchange="this.form.submit()">
+          <option value="">Todas</option>
+          {% for item in escolas %}
+            <option value="{{ item.pk }}" {% if escola and item.pk == escola.pk %}selected{% endif %}>{{ item.nome }}</option>
+          {% endfor %}
+        </select>
+      {% endif %}
       <label for="ano">Ano</label>
       <select id="ano" name="ano" class="field-control" onchange="this.form.submit()">
         {% for opcao in anos %}
@@ -24,7 +33,7 @@
         <strong>{{ item.nome }}</strong>
         <div class="month-actions">
           {% if item.iniciado %}
-            <a class="primary-link" href="{% url 'folha_mensal' item.mes item.ano %}">Processar folha</a>
+            <a class="primary-link" href="{% url 'folha_mensal' item.mes item.ano %}{{ item.querystring }}">Processar folha</a>
           {% else %}
             <span class="locked-action">Processar folha</span>
           {% endif %}
@@ -32,7 +41,7 @@
             {% if item.processada %}Processada{% else %}Não processada{% endif %}
           </span>
           {% if item.iniciado %}
-            <a class="toolbar-button" href="{% url 'folha_mensal' item.mes item.ano %}">Editar folha</a>
+            <a class="toolbar-button" href="{% url 'folha_mensal' item.mes item.ano %}{{ item.querystring }}">Editar folha</a>
           {% else %}
             <span class="locked-action">Editar folha</span>
           {% endif %}

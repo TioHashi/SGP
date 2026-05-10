@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.urls import reverse
 
-from .models import Frequencia, Servidor, TransferenciaServidor
+from .models import Escola, FolhaPdf, Frequencia, Servidor, TransferenciaServidor
 
 
 def escola_do_usuario(user):
@@ -23,35 +23,63 @@ def alertas_sgp(request):
     hoje = timezone.localdate()
     escola_usuario = escola_do_usuario(request.user)
     escola_logada_nome = 'Administrador geral' if request.user.is_superuser else (escola_usuario.nome if escola_usuario else 'Sem escola vinculada')
-    if hoje.day >= 15:
-        servidores = Servidor.objects.filter(ativo=True)
-        if not request.user.is_superuser:
-            servidores = servidores.filter(escola=escola_usuario)
-        folha_processada = Frequencia.objects.filter(
-            servidor__in=servidores,
-            mes=str(hoje.month),
-            ano=str(hoje.year),
-        ).exists()
+    if request.user.is_superuser or hoje.day >= 15:
+        if request.user.is_superuser:
+            for escola in Escola.objects.filter(ativa=True).order_by('nome'):
+                servidores = Servidor.objects.filter(ativo=True, escola=escola)
+                folha_processada = Frequencia.objects.filter(
+                    servidor__in=servidores,
+                    mes=str(hoje.month),
+                    ano=str(hoje.year),
+                ).exists()
+                folha_entregue = FolhaPdf.objects.filter(escola=escola, mes=str(hoje.month), ano=str(hoje.year)).exists()
+                if not folha_processada:
+                    codigo = f'admin-folha-atrasada-{escola.pk}-{hoje.year}-{hoje.month}'
+                    alertas.append({
+                        'codigo': codigo,
+                        'tipo': 'folha',
+                        'titulo': 'Escola sem folha processada',
+                        'texto': f'{escola.nome} ainda não processou a folha deste mês.',
+                        'destino_url': f"{reverse('folha_mensal', args=[str(hoje.month), str(hoje.year)])}?escola={escola.pk}",
+                        'lida': codigo in lidas,
+                    })
+                elif not folha_entregue:
+                    codigo = f'admin-envio-secretaria-{escola.pk}-{hoje.year}-{hoje.month}'
+                    alertas.append({
+                        'codigo': codigo,
+                        'tipo': 'folha',
+                        'titulo': 'Escola falta entregar',
+                        'texto': f'{escola.nome} ainda não gerou o PDF para entrega à secretaria.',
+                        'destino_url': f"{reverse('relatorio_folha', args=[str(hoje.month), str(hoje.year)])}?escola={escola.pk}",
+                        'lida': codigo in lidas,
+                    })
+        else:
+            servidores = Servidor.objects.filter(ativo=True, escola=escola_usuario)
+            folha_processada = Frequencia.objects.filter(
+                servidor__in=servidores,
+                mes=str(hoje.month),
+                ano=str(hoje.year),
+            ).exists()
 
-        codigo = f'folha-atrasada-{hoje.year}-{hoje.month}'
-        if not folha_processada:
+            codigo = f'folha-atrasada-{hoje.year}-{hoje.month}'
+            if not folha_processada:
+                alertas.append({
+                    'codigo': codigo,
+                    'tipo': 'folha',
+                    'titulo': 'Folha em atraso',
+                    'texto': 'A folha de frequência precisa ser processada para este mês.',
+                    'destino_url': reverse('folha_mensal', args=[str(hoje.month), str(hoje.year)]),
+                    'lida': codigo in lidas,
+                })
+            codigo = f'envio-secretaria-{hoje.year}-{hoje.month}'
             alertas.append({
                 'codigo': codigo,
                 'tipo': 'folha',
-                'titulo': 'Folha em atraso',
-                'texto': 'A folha de frequência precisa ser processada para este mês.',
-                'destino_url': reverse('folha_mensal', args=[str(hoje.month), str(hoje.year)]),
+                'titulo': 'Enviar à secretaria',
+                'texto': 'O relatório mensal deve ser enviado à secretaria até o dia 15.',
+                'destino_url': reverse('relatorio_folha', args=[str(hoje.month), str(hoje.year)]),
                 'lida': codigo in lidas,
             })
-        codigo = f'envio-secretaria-{hoje.year}-{hoje.month}'
-        alertas.append({
-            'codigo': codigo,
-            'tipo': 'folha',
-            'titulo': 'Enviar à secretaria',
-            'texto': 'O relatório mensal deve ser enviado à secretaria até o dia 15.',
-            'destino_url': reverse('relatorio_folha', args=[str(hoje.month), str(hoje.year)]),
-            'lida': codigo in lidas,
-        })
 
     transferencias = TransferenciaServidor.objects.filter(status='pendente').select_related(
         'servidor',

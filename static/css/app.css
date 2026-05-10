@@ -1512,12 +1512,21 @@ td a {
   align-items: end;
   display: flex;
   gap: 10px;
+  justify-content: flex-end;
 }
 
 .year-filter label {
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 800;
+}
+
+.year-filter select[name="escola"] {
+  min-width: min(320px, 40vw);
+}
+
+.year-filter select[name="ano"] {
+  width: 96px;
 }
 
 .month-board {
