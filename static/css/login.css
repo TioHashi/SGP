@@ -88,6 +88,38 @@ body {
   width: min(980px, 94vw);
 }
 
+.login-rights-footer {
+  align-items: center;
+  bottom: 14px;
+  color: rgba(255, 255, 255, 0.72);
+  display: grid;
+  font-size: 0.78rem;
+  gap: 12px;
+  grid-template-columns: 1fr auto 1fr;
+  left: 50%;
+  position: fixed;
+  transform: translateX(-50%);
+  width: min(980px, calc(100% - 32px));
+  z-index: 3;
+}
+
+.login-rights-footer strong {
+  color: #fff;
+  text-align: center;
+}
+
+.login-rights-footer span:last-child {
+  text-align: right;
+}
+
+.sgp-login-body.light .login-rights-footer {
+  color: rgba(16, 24, 32, 0.72);
+}
+
+.sgp-login-body.light .login-rights-footer strong {
+  color: #101820;
+}
+
 @keyframes cardIn {
   from {
     opacity: 0;
@@ -358,6 +390,7 @@ body {
 
 @media (max-width: 700px) {
   .sgp-login-body {
+    flex-direction: column;
     overflow: auto;
     padding: 20px;
   }
@@ -365,6 +398,20 @@ body {
   .sgp-login-card {
     min-height: auto;
     padding: 36px 24px;
+  }
+
+  .login-rights-footer {
+    bottom: auto;
+    grid-template-columns: 1fr;
+    margin-top: 18px;
+    position: static;
+    text-align: center;
+    transform: none;
+    width: 100%;
+  }
+
+  .login-rights-footer span:last-child {
+    text-align: center;
   }
 
   .login-brand-panel {
