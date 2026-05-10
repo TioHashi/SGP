@@ -32,7 +32,9 @@
       <article class="month-row {% if item.processada %}is-processed{% endif %} {% if not item.iniciado %}is-locked{% endif %}">
         <strong>{{ item.nome }}</strong>
         <div class="month-actions">
-          {% if item.iniciado %}
+          {% if item.processada %}
+            <span class="locked-action">Processar folha</span>
+          {% elif item.iniciado %}
             <a class="primary-link" href="{% url 'folha_mensal' item.mes item.ano %}{{ item.querystring }}">Processar folha</a>
           {% else %}
             <span class="locked-action">Processar folha</span>

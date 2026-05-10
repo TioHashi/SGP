@@ -76,11 +76,11 @@
             {% endif %}
             <td>
               <div class="report-actions">
-                <a href="{% url 'relatorio_folha' folha.mes folha.ano %}{{ folha.querystring }}">Abrir</a>
-                <a href="{% url 'relatorio_folha_pdf' folha.mes folha.ano %}{{ folha.querystring }}" target="_blank">PDF</a>
+                <a href="{% url 'relatorio_folha' folha.mes folha.ano %}{{ folha.querystring }}">Abrir folha</a>
+                <a href="{% url 'relatorio_folha_pdf' folha.mes folha.ano %}{{ folha.querystring }}" target="_blank">Gerar PDF</a>
                 <form method="post" action="{% url 'relatorio_folha_excluir' folha.mes folha.ano %}{{ folha.querystring }}">
                   {% csrf_token %}
-                  <button type="submit" onclick="return confirm('Excluir esta folha? Ela ficará como não processada e poderá ser gerada novamente.')">Excluir</button>
+                  <button type="submit" onclick="return confirm('Excluir esta folha? Ela ficará como não processada e poderá ser gerada novamente.')">Excluir folha</button>
                 </form>
               </div>
             </td>

@@ -25,8 +25,9 @@
     </div>
     <details class="alert-menu">
       <summary aria-label="Alertas">
+        <span class="alert-bell {% if alertas_nao_lidos %}has-unread{% endif %}" aria-hidden="true">🔔</span>
         <span>Alertas</span>
-        {% if alertas_nao_lidos %}<strong aria-label="{{ alertas_nao_lidos }} notificação nova"></strong>{% endif %}
+        {% if alertas_nao_lidos %}<small>{{ alertas_nao_lidos }}</small>{% endif %}
       </summary>
       <div class="alert-dropdown">
         <div class="alert-dropdown-head">

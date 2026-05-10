@@ -11,7 +11,7 @@ class ServidorForm(forms.ModelForm):
         'Coordenador(a) de Sistemas',
         'Secretária de Educação',
     ]
-    CARGA_AUTOMATICA_30 = {
+    CARGOS_HORA_AULA = {
         'diretor',
         'diretora',
         'diretor(a)',
@@ -95,7 +95,7 @@ class ServidorForm(forms.ModelForm):
             field.widget.attrs.setdefault('class', 'field-control')
 
         self.fields['status_servidor'].widget.attrs['class'] = 'status-radio-group'
-        self.fields['carga_horaria'].help_text = 'Diretor(a), Professor(a), Coordenador(a) Pedagógico e Coordenador(a) de Sistemas recebem 30 horas automaticamente.'
+        self.fields['carga_horaria'].help_text = 'Cargos administrativos e de apoio recebem 30h automaticamente. Diretor(a), Professor(a), Coordenador(a) Pedagógico e Coordenador(a) de Sistemas são pagos por hora/aula.'
 
         if user and not user.is_superuser:
             self.fields.pop('escola')
@@ -120,12 +120,12 @@ class ServidorForm(forms.ModelForm):
             .replace('ç', 'c')
         )
 
-    def usa_carga_automatica(self, cargo, funcao):
+    def usa_hora_aula(self, cargo, funcao):
         cargo_normalizado = self.normalizar_funcao(cargo)
         funcao_normalizada = self.normalizar_funcao(funcao)
         return (
-            cargo_normalizado in self.CARGA_AUTOMATICA_30
-            or funcao_normalizada in self.CARGA_AUTOMATICA_30
+            cargo_normalizado in self.CARGOS_HORA_AULA
+            or funcao_normalizada in self.CARGOS_HORA_AULA
         )
 
     def clean(self):
@@ -136,7 +136,10 @@ class ServidorForm(forms.ModelForm):
         funcao = cleaned_data.get('funcao')
         carga_horaria = cleaned_data.get('carga_horaria')
 
-        if self.usa_carga_automatica(cargo, funcao):
+        if self.usa_hora_aula(cargo, funcao):
+            if not carga_horaria:
+                self.add_error('carga_horaria', 'Informe a carga horária para cargo ou função pago por hora/aula.')
+        elif cargo or funcao:
             cleaned_data['carga_horaria'] = 30
         elif not carga_horaria:
             self.add_error('carga_horaria', 'Informe a carga horária para este cargo ou função.')

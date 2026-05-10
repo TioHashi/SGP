@@ -127,7 +127,7 @@
     const funcaoInput = document.querySelector('[name="funcao"]');
     const cargaInput = document.querySelector('[name="carga_horaria"]');
     const cargaField = cargaInput?.closest('.form-field');
-    const cargaAuto30 = new Set([
+    const cargosHoraAula = new Set([
       'diretor',
       'diretora',
       'diretor(a)',
@@ -154,15 +154,21 @@
     }
     function syncCargaHoraria() {
       if (!cargaInput) return;
-      const usaCargaAuto = cargaAuto30.has(normalizarFuncao(cargoInput?.value)) || cargaAuto30.has(normalizarFuncao(funcaoInput?.value));
-      if (usaCargaAuto) {
+      const usaHoraAula = cargosHoraAula.has(normalizarFuncao(cargoInput?.value)) || cargosHoraAula.has(normalizarFuncao(funcaoInput?.value));
+      const temCargoOuFuncao = Boolean(normalizarFuncao(cargoInput?.value) || normalizarFuncao(funcaoInput?.value));
+      if (temCargoOuFuncao && !usaHoraAula) {
         cargaInput.value = '30';
         cargaInput.readOnly = true;
+        cargaInput.dataset.autoFilled = 'true';
         cargaInput.placeholder = '30';
         cargaField?.classList.add('is-auto-filled');
       } else {
+        if (cargaInput.dataset.autoFilled === 'true') {
+          cargaInput.value = '';
+        }
+        cargaInput.dataset.autoFilled = 'false';
         cargaInput.readOnly = false;
-        cargaInput.placeholder = 'Informe a carga horária';
+        cargaInput.placeholder = usaHoraAula ? 'Informe a carga hora/aula' : 'Informe a carga horária';
         cargaField?.classList.remove('is-auto-filled');
       }
     }

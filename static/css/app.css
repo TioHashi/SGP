@@ -70,6 +70,27 @@ a {
   position: relative;
 }
 
+@keyframes bellSwing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(13deg);
+  }
+  30% {
+    transform: rotate(-11deg);
+  }
+  45% {
+    transform: rotate(8deg);
+  }
+  60% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
 .login-shell {
   justify-self: end;
   position: relative;
@@ -306,15 +327,28 @@ a {
   display: none;
 }
 
-.alert-menu summary strong {
-  animation: softPulse 1.8s infinite;
+.alert-bell {
+  display: inline-block;
+  transform-origin: 50% 0;
+}
+
+.alert-bell.has-unread {
+  animation: bellSwing 1.35s ease-in-out infinite;
+  filter: drop-shadow(0 0 5px rgba(255, 204, 51, 0.65));
+}
+
+.alert-menu summary small {
+  align-items: center;
   background: #ffcc33;
   border-radius: 999px;
-  box-shadow: 0 0 0 3px rgba(255, 204, 51, 0.22);
-  display: block;
-  height: 9px;
-  min-width: 9px;
-  width: 9px;
+  color: #1f2933;
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 900;
+  height: 18px;
+  justify-content: center;
+  min-width: 18px;
+  padding: 0 5px;
 }
 
 .alert-dropdown {
@@ -366,14 +400,11 @@ a {
 }
 
 .alert-dropdown article.is-unread::before {
-  background: var(--dash-primary);
-  border-radius: 50%;
-  content: '';
-  height: 8px;
+  content: '🔔';
+  font-size: 0.8rem;
   left: 4px;
   position: absolute;
-  top: 16px;
-  width: 8px;
+  top: 12px;
 }
 
 .alert-dropdown article.is-read {
@@ -1237,7 +1268,7 @@ a {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .report-actions a,
@@ -1248,8 +1279,12 @@ a {
   font: inherit;
   font-size: 0.82rem;
   font-weight: 800;
+  justify-content: center;
   min-height: 30px;
-  padding: 0 9px;
+  min-width: 92px;
+  padding: 0 10px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .report-actions a {
@@ -1620,10 +1655,10 @@ td a {
 
 .month-actions {
   align-items: center;
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
   gap: 8px;
-  justify-content: flex-end;
+  grid-template-columns: 112px 112px 100px;
+  justify-content: end;
 }
 
 .month-status,
@@ -1634,17 +1669,21 @@ td a {
   font-weight: 800;
   justify-content: center;
   min-height: 28px;
-  min-width: 98px;
   padding: 5px 8px;
+  text-align: center;
   white-space: nowrap;
+  width: 100%;
 }
 
 .month-actions .primary-link,
 .month-actions .toolbar-button {
   font-size: 0.74rem;
+  justify-content: center;
   min-height: 28px;
   padding: 5px 8px;
+  text-align: center;
   white-space: nowrap;
+  width: 100%;
 }
 
 .month-status {
@@ -1715,6 +1754,16 @@ td a {
 .report-toolbar a {
   color: var(--muted);
   font-weight: 700;
+}
+
+.report-toolbar .toolbar-button,
+.report-toolbar button {
+  align-items: center;
+  color: #fff;
+  display: inline-flex;
+  justify-content: center;
+  min-width: 118px;
+  text-align: center;
 }
 
 .print-sheet {
@@ -2116,9 +2165,22 @@ td a {
     grid-template-columns: 1fr;
   }
 
-  .month-row,
-  .month-actions {
+  .month-row {
     grid-template-columns: 1fr;
+  }
+
+  .month-actions {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr) minmax(0, 0.95fr);
+    width: 100%;
+  }
+
+  .month-status,
+  .locked-action,
+  .month-actions .primary-link,
+  .month-actions .toolbar-button {
+    font-size: 0.68rem;
+    padding-left: 4px;
+    padding-right: 4px;
   }
 
   .frequency-editor-head {
