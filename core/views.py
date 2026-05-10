@@ -161,6 +161,10 @@ def dashboard(request):
 def servidor_lista(request):
     servidores = servidores_permitidos(request.user)
     busca = request.GET.get('q', '').strip()
+    escola_filtro = request.GET.get('escola', '').strip()
+    escolas = Escola.objects.filter(ativa=True)
+    if request.user.is_superuser and escola_filtro:
+        servidores = servidores.filter(escola_id=escola_filtro)
     if busca:
         servidores = servidores.filter(nome__icontains=busca)
 
@@ -176,6 +180,8 @@ def servidor_lista(request):
     contexto = {
         'servidores': servidores,
         'busca': busca,
+        'escolas': escolas,
+        'escola_filtro': escola_filtro,
         'transferencias_pendentes': transferencias_pendentes,
     }
     return render(request, 'core/servidor_lista.html', contexto)

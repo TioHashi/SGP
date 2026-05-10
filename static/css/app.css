@@ -1228,6 +1228,10 @@ a {
   margin-bottom: 14px;
 }
 
+.search-form select {
+  flex: 0 1 280px;
+}
+
 .search-form input {
   flex: 1;
 }
@@ -1285,8 +1289,10 @@ a {
 .report-actions {
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
+  justify-content: flex-end;
+  min-width: max-content;
 }
 
 .report-actions a,
@@ -1299,10 +1305,15 @@ a {
   font-weight: 800;
   justify-content: center;
   min-height: 30px;
-  min-width: 92px;
-  padding: 0 10px;
+  min-width: 88px;
+  padding: 0 9px;
   text-align: center;
   white-space: nowrap;
+}
+
+.report-actions form {
+  display: inline-flex;
+  margin: 0;
 }
 
 .report-actions a {

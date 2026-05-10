@@ -12,6 +12,14 @@
   </section>
 
   <form class="search-form" method="get">
+    {% if request.user.is_superuser %}
+      <select name="escola" class="field-control">
+        <option value="">Todas as escolas</option>
+        {% for escola in escolas %}
+          <option value="{{ escola.pk }}" {% if escola_filtro == escola.pk|stringformat:'s' %}selected{% endif %}>{{ escola.nome }}</option>
+        {% endfor %}
+      </select>
+    {% endif %}
     <input type="search" name="q" value="{{ busca }}" placeholder="Buscar por nome">
     <button type="submit">Buscar</button>
   </form>
