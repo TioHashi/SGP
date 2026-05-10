@@ -106,6 +106,7 @@ def alertas_sgp(request):
             'lida': codigo in lidas,
         })
 
+    alertas.sort(key=lambda alerta: (alerta['lida'], alerta['titulo']))
     alertas_nao_lidos = sum(1 for alerta in alertas if not alerta['lida'])
     return {
         'alertas_sgp': alertas,

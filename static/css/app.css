@@ -380,6 +380,17 @@ a {
   color: var(--muted);
 }
 
+.alert-read-all {
+  background: #f7fbff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.alert-read-all button {
+  width: 100%;
+}
+
 .alert-dropdown article {
   border-bottom: 1px solid var(--line);
   padding: 10px;

@@ -10,6 +10,7 @@ from django.utils.http import content_disposition_header, url_has_allowed_host_a
 from django.utils.text import slugify
 from playwright.sync_api import sync_playwright
 
+from .context_processors import alertas_sgp
 from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
 from .firebase import upload_pdf
 from .models import Escola, FolhaAlteracao, FolhaExclusao, FolhaPdf, Frequencia, Servidor, ServidorObservacao, TransferenciaServidor
@@ -318,6 +319,21 @@ def notificacao_ler(request, codigo):
     request.session['notificacoes_lidas'] = sorted(lidas)
     request.session.modified = True
     destino = request.GET.get('next')
+    if destino and url_has_allowed_host_and_scheme(destino, allowed_hosts={request.get_host()}):
+        return redirect(destino)
+    return redirect('dashboard')
+
+
+@login_required
+def notificacao_ler_todas(request):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    lidas = set(request.session.get('notificacoes_lidas', []))
+    for alerta in alertas_sgp(request).get('alertas_sgp', []):
+        lidas.add(alerta['codigo'])
+    request.session['notificacoes_lidas'] = sorted(lidas)
+    request.session.modified = True
+    destino = request.POST.get('next') or request.META.get('HTTP_REFERER')
     if destino and url_has_allowed_host_and_scheme(destino, allowed_hosts={request.get_host()}):
         return redirect(destino)
     return redirect('dashboard')

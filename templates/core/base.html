@@ -34,6 +34,13 @@
           <b>Notificações</b>
           <small>{{ alertas_nao_lidos }} nova(s)</small>
         </div>
+        {% if alertas_sgp %}
+          <form class="alert-read-all" method="post" action="{% url 'notificacao_ler_todas' %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit">Ler tudo</button>
+          </form>
+        {% endif %}
         {% for alerta in alertas_sgp %}
           <article class="{% if alerta.lida %}is-read{% else %}is-unread{% endif %}">
             <a href="{% url 'notificacao_ler' alerta.codigo %}?next={{ alerta.destino_url|urlencode }}">
