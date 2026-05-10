@@ -224,9 +224,10 @@ a {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   color: rgba(255, 255, 255, 0.86);
+  flex: 0 1 auto;
   font-size: 0.82rem;
   font-weight: 800;
-  max-width: 260px;
+  max-width: min(360px, 28vw);
   overflow: hidden;
   padding: 8px 12px;
   text-overflow: ellipsis;
@@ -234,6 +235,7 @@ a {
 }
 
 .school-pill span {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
 }

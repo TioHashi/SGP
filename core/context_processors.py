@@ -22,7 +22,12 @@ def alertas_sgp(request):
     lidas = set(request.session.get('notificacoes_lidas', []))
     hoje = timezone.localdate()
     escola_usuario = escola_do_usuario(request.user)
-    escola_logada_nome = 'Administrador geral' if request.user.is_superuser else (escola_usuario.nome if escola_usuario else 'Sem escola vinculada')
+    if request.user.is_superuser:
+        escola_logada_nome = 'Administrador geral'
+    elif escola_usuario:
+        escola_logada_nome = f'Escola · {escola_usuario.nome}'
+    else:
+        escola_logada_nome = 'Sem escola vinculada'
     if request.user.is_superuser or hoje.day >= 15:
         if request.user.is_superuser:
             for escola in Escola.objects.filter(ativa=True).order_by('nome'):
