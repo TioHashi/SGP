@@ -515,6 +515,7 @@ a {
   border: 0;
   cursor: pointer;
   font: inherit;
+  font-weight: 700;
 }
 
 .hero-actions .toolbar-button {
@@ -2195,8 +2196,9 @@ td a {
   }
 
   .page {
+    margin: 0 auto;
     padding: 0;
-    width: 100%;
+    width: 180mm;
   }
 
   .print-sheet {
@@ -2222,17 +2224,17 @@ td a {
     background: linear-gradient(135deg, #ffffff, #edf7f3) !important;
     border: 1px solid var(--line);
     border-left: 5px solid var(--brand-2);
-    margin-bottom: 4px;
-    padding: 7px 9px;
+    margin-bottom: 5px;
+    padding: 9px 11px;
   }
 
   .server-profile-hero p,
   .server-profile-hero span {
-    font-size: 8.5pt;
+    font-size: 9pt;
   }
 
   .server-profile-hero h1 {
-    font-size: 14pt;
+    font-size: 16pt;
     line-height: 1.08;
     margin: 2px 0;
   }
@@ -2240,25 +2242,25 @@ td a {
   .profile-grid,
   .detail-sections,
   .functional-notes {
-    gap: 5px;
+    gap: 6px;
   }
 
   .profile-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin-bottom: 4px;
+    margin-bottom: 5px;
   }
 
   .detail-sections,
   .functional-notes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 4px;
+    margin-top: 5px;
   }
 
   .profile-card,
   .detail-card {
     background: var(--panel) !important;
     border-radius: 6px;
-    padding: 5px 6px;
+    padding: 7px 8px;
   }
 
   .profile-card.highlight {
@@ -2266,7 +2268,7 @@ td a {
   }
 
   .profile-card strong {
-    font-size: 11pt;
+    font-size: 12pt;
     margin-top: 2px;
   }
 
@@ -2274,24 +2276,24 @@ td a {
   .detail-card dt,
   .note-list span,
   .event-list span {
-    font-size: 7.5pt;
+    font-size: 8pt;
   }
 
   .detail-card h2 {
-    font-size: 8.5pt;
-    margin-bottom: 3px;
+    font-size: 9.2pt;
+    margin-bottom: 4px;
   }
 
   .detail-card dl,
   .note-list,
   .event-list {
     gap: 3px;
-    margin-top: 3px;
+    margin-top: 4px;
   }
 
   .detail-card dl div {
     gap: 2px;
-    grid-template-columns: 68px minmax(0, 1fr);
+    grid-template-columns: 74px minmax(0, 1fr);
     padding-top: 2px;
   }
 
@@ -2299,19 +2301,19 @@ td a {
   .note-list p,
   .event-list p,
   .empty-note {
-    font-size: 7.3pt;
-    line-height: 1.12;
+    font-size: 8.1pt;
+    line-height: 1.14;
   }
 
   .note-list div,
   .event-list div {
     background: #f7fafc !important;
     border-radius: 5px;
-    padding: 3px 4px;
+    padding: 4px 5px;
   }
 
   .event-list strong {
-    font-size: 7.8pt;
+    font-size: 8.4pt;
   }
 }
 
