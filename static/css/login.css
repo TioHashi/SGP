@@ -313,6 +313,26 @@ body {
   transform: translateY(-2px);
 }
 
+.remember-user {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  color: var(--login-muted);
+  cursor: pointer;
+  display: flex;
+  font-weight: 700;
+  gap: 10px;
+  margin: -4px 0 4px;
+  padding: 12px 14px;
+}
+
+.remember-user input {
+  accent-color: var(--login-primary-2);
+  height: 18px;
+  width: 18px;
+}
+
 .eye {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);

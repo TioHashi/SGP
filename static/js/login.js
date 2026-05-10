@@ -2,22 +2,44 @@ const body = document.body;
 const themeBtn = document.getElementById("themeBtn");
 const toggleSenha = document.getElementById("toggleSenha");
 const senha = document.getElementById("id_password");
+const usuario = document.getElementById("id_username");
+const rememberUser = document.getElementById("rememberUser");
 const cardLogin = document.getElementById("cardLogin");
+const loginForm = document.getElementById("loginForm");
+const rememberedUserKey = "sgp_remembered_user";
 
 if (themeBtn) {
   themeBtn.addEventListener("click", () => {
     body.classList.toggle("light");
     const claro = body.classList.contains("light");
-    themeBtn.textContent = claro ? "Dia" : "Noite";
+    themeBtn.textContent = claro ? "☀️ Dia" : "🌙 Noite";
     themeBtn.title = claro ? "Ativar modo escuro" : "Ativar modo claro";
   });
+}
+
+if (usuario && rememberUser) {
+  const rememberedUser = localStorage.getItem(rememberedUserKey);
+  if (rememberedUser) {
+    usuario.value = rememberedUser;
+    rememberUser.checked = true;
+  }
 }
 
 if (toggleSenha && senha) {
   toggleSenha.addEventListener("click", () => {
     const mostrando = senha.type === "text";
     senha.type = mostrando ? "password" : "text";
-    toggleSenha.textContent = mostrando ? "Mostrar" : "Ocultar";
+    toggleSenha.textContent = mostrando ? "👁️ Mostrar" : "🙈 Ocultar";
+  });
+}
+
+if (loginForm && usuario && rememberUser) {
+  loginForm.addEventListener("submit", () => {
+    if (rememberUser.checked && usuario.value.trim()) {
+      localStorage.setItem(rememberedUserKey, usuario.value.trim());
+    } else {
+      localStorage.removeItem(rememberedUserKey);
+    }
   });
 }
 

@@ -23,6 +23,7 @@ from core.views import (
     folha_selecionar,
     notificacao_ler,
     relatorio_folha,
+    relatorio_folha_excluir,
     relatorio_folha_pdf,
     servidor_ficha,
     relatorios,
@@ -49,5 +50,6 @@ urlpatterns = [
     path('folha/<str:mes>/<str:ano>/', folha_mensal, name='folha_mensal'),
     path('relatorios/', relatorios, name='relatorios'),
     path('relatorios/folha/<str:mes>/<str:ano>/', relatorio_folha, name='relatorio_folha'),
+    path('relatorios/folha/<str:mes>/<str:ano>/excluir/', relatorio_folha_excluir, name='relatorio_folha_excluir'),
     path('relatorios/folha/<str:mes>/<str:ano>/pdf/', relatorio_folha_pdf, name='relatorio_folha_pdf'),
 ]

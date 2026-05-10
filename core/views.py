@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Max, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import content_disposition_header, url_has_allowed_host_and_scheme
@@ -488,6 +488,39 @@ def relatorio_folha(request, mes, ano):
 
 
 @login_required
+def relatorio_folha_excluir(request, mes, ano):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    servidores, escola = servidores_folha_request(request)
+    if request.user.is_superuser and not escola:
+        messages.error(request, 'Selecione uma escola para excluir a folha.')
+        return redirect('relatorios')
+
+    frequencias_removidas, _ = Frequencia.objects.filter(
+        servidor__in=servidores,
+        mes=mes,
+        ano=ano,
+    ).delete()
+    FolhaExclusao.objects.filter(
+        servidor__in=servidores,
+        mes=mes,
+        ano=ano,
+    ).delete()
+    FolhaPdf.objects.filter(
+        escola=escola,
+        mes=mes,
+        ano=ano,
+    ).delete()
+
+    nome_mes = dict(Frequencia.MESES_CHOICES).get(mes, mes)
+    escola_nome = escola.nome if escola else 'sua escola'
+    messages.success(request, f'Folha de {nome_mes}/{ano} de {escola_nome} excluída. {frequencias_removidas} registro(s) removido(s).')
+    destino = f"{redirect('folha_selecionar').url}?ano={ano}{'&escola=' + str(escola.pk) if escola else ''}"
+    return redirect(destino)
+
+
+@login_required
 def relatorio_folha_pdf(request, mes, ano):
     servidores, escola = servidores_folha_request(request)
     if folha_extra(mes):
@@ -506,8 +539,8 @@ def relatorio_folha_pdf(request, mes, ano):
             frequencia.observacoes = servidor.licenca_tipo
         linhas.append({'servidor': servidor, 'frequencia': frequencia})
     nome_mes = dict(Frequencia.MESES_CHOICES).get(mes, mes)
-    escola_nome = escola.nome if escola else 'semed'
-    nome_arquivo = f'Frequência Mensal ({nome_mes}/{ano}).pdf'
+    escola_nome = escola.nome if escola else 'SEMED'
+    nome_arquivo = f'Frequência Mensal - {escola_nome} ({nome_mes}-{ano}).pdf'
     nome_storage = f'frequencia-mensal-{slugify(escola_nome)}-{slugify(nome_mes)}-{ano}.pdf'
     storage_path = f'folhas/{ano}/{mes}/{nome_storage}'
     pdf = folha_pdf_bytes(linhas, mes, ano, escola)

@@ -51,8 +51,7 @@
           <th>Registros</th>
           <th>Ultima atualizacao</th>
           {% if request.user.is_superuser %}<th>Alterações recentes</th>{% endif %}
-          <th></th>
-          <th></th>
+          <th>Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -75,12 +74,20 @@
                 {% endfor %}
               </td>
             {% endif %}
-            <td><a href="{% url 'relatorio_folha' folha.mes folha.ano %}{{ folha.querystring }}">Abrir</a></td>
-            <td><a href="{% url 'relatorio_folha_pdf' folha.mes folha.ano %}{{ folha.querystring }}" target="_blank">PDF</a></td>
+            <td>
+              <div class="report-actions">
+                <a href="{% url 'relatorio_folha' folha.mes folha.ano %}{{ folha.querystring }}">Abrir</a>
+                <a href="{% url 'relatorio_folha_pdf' folha.mes folha.ano %}{{ folha.querystring }}" target="_blank">PDF</a>
+                <form method="post" action="{% url 'relatorio_folha_excluir' folha.mes folha.ano %}{{ folha.querystring }}">
+                  {% csrf_token %}
+                  <button type="submit" onclick="return confirm('Excluir esta folha? Ela ficará como não processada e poderá ser gerada novamente.')">Excluir</button>
+                </form>
+              </div>
+            </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="{% if request.user.is_superuser %}7{% else %}5{% endif %}">Nenhuma folha salva ainda.</td>
+            <td colspan="{% if request.user.is_superuser %}6{% else %}4{% endif %}">Nenhuma folha salva ainda.</td>
           </tr>
         {% endfor %}
       </tbody>

@@ -1233,6 +1233,38 @@ a {
   color: var(--muted);
 }
 
+.report-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.report-actions a,
+.report-actions button {
+  align-items: center;
+  border-radius: 6px;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  min-height: 30px;
+  padding: 0 9px;
+}
+
+.report-actions a {
+  background: rgba(30, 95, 116, 0.1);
+  border: 1px solid rgba(30, 95, 116, 0.18);
+  color: var(--brand);
+}
+
+.report-actions button {
+  background: rgba(201, 61, 61, 0.1);
+  border: 1px solid rgba(201, 61, 61, 0.2);
+  color: var(--accent);
+  cursor: pointer;
+}
+
 .table-card {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -1294,30 +1326,30 @@ td a {
 .server-table-card th,
 .server-table-card td {
   font-size: clamp(0.68rem, 0.82vw, 0.92rem);
-  overflow: hidden;
-  padding-left: 6px;
-  padding-right: 6px;
-  text-overflow: ellipsis;
+  line-height: 1.18;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  padding: 8px 6px;
   vertical-align: middle;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .server-table-card th:nth-child(1),
 .server-table-card td:nth-child(1) {
   text-align: left;
-  width: 24%;
+  width: 25%;
 }
 
 .server-table-card th:nth-child(2),
 .server-table-card td:nth-child(2) {
   text-align: left;
-  width: 23%;
+  width: 25%;
 }
 
 .server-table-card th:nth-child(3),
 .server-table-card td:nth-child(3) {
   text-align: center;
-  width: 13%;
+  width: 15%;
 }
 
 .server-table-card th:nth-child(4),
@@ -1326,13 +1358,15 @@ td a {
 .server-table-card td:nth-child(5) {
   text-align: center;
   width: 8%;
+  white-space: nowrap;
 }
 
 .server-table-card th:nth-child(6),
 .server-table-card td:nth-child(6) {
   overflow: visible;
   text-align: center;
-  width: 24%;
+  width: 19%;
+  white-space: nowrap;
 }
 
 .server-table-card .row-actions {
@@ -1349,8 +1383,8 @@ td a {
   color: var(--brand);
   display: inline-flex;
   font-size: clamp(0.66rem, 0.75vw, 0.8rem);
-  min-height: 28px;
-  padding: 6px 7px;
+  min-height: 24px;
+  padding: 4px 6px;
   white-space: nowrap;
 }
 

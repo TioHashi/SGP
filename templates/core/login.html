@@ -21,7 +21,7 @@
   </div>
 
   <main class="sgp-login-card" id="cardLogin">
-    <button class="theme-btn" id="themeBtn" type="button" title="Alternar modo claro e escuro">Noite</button>
+    <button class="theme-btn" id="themeBtn" type="button" title="Alternar modo claro e escuro">🌙 Noite</button>
 
     <section class="login-brand-panel">
       <div class="login-card-light" aria-hidden="true"></div>
@@ -30,14 +30,14 @@
       </div>
       <div>
         <h1>SGP</h1>
-        <p>Sistema de Gerenciamento de Pessoas</p>
+        <p>👥 Sistema de Gerenciamento de Pessoas</p>
       </div>
     </section>
 
     <section class="welcome">
-      <h2>Bem-vindo(a) de volta!</h2>
+      <h2>👋 Bem-vindo(a) de volta!</h2>
       <div class="welcome-line" aria-hidden="true"></div>
-      <p>Faça login para acessar o sistema</p>
+      <p>🔐 Faça login para acessar o sistema</p>
     </section>
 
     {% if form.errors %}
@@ -47,28 +47,33 @@
     <form method="post" class="login-form" id="loginForm">
       {% csrf_token %}
       <div class="field">
-        <label for="{{ form.username.id_for_label }}"><span>Usuario</span></label>
+        <label for="{{ form.username.id_for_label }}"><span>👤 Usuário</span></label>
         <div class="input-wrap">
           {{ form.username }}
         </div>
       </div>
 
       <div class="field">
-        <label for="{{ form.password.id_for_label }}"><span>Senha</span></label>
+        <label for="{{ form.password.id_for_label }}"><span>🔒 Senha</span></label>
         <div class="input-wrap">
           {{ form.password }}
-          <button class="eye" id="toggleSenha" type="button">Mostrar</button>
+          <button class="eye" id="toggleSenha" type="button">👁️ Mostrar</button>
         </div>
       </div>
 
+      <label class="remember-user">
+        <input type="checkbox" id="rememberUser">
+        <span>💾 Lembrar meu usuário neste computador</span>
+      </label>
+
       <button class="login-btn" type="submit">
-        <span>Entrar</span>
+        <span>Entrar no sistema</span>
         <span aria-hidden="true">→</span>
       </button>
     </form>
 
     <section class="footer-secure">
-      <div class="shield">SGP</div>
+      <div class="shield">🛡️</div>
       <p>Segurança • Gestão • Eficiência</p>
     </section>
   </main>
