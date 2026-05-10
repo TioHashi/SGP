@@ -8,7 +8,7 @@ services:
       - "8000:8080"
     volumes:
       - ./data:/app/data
-      - ./firebase-service-account.json:/run/secrets/firebase-service-account.json:ro
+      - ./secrets:/run/secrets:ro
     command: >
       sh -c "python manage.py migrate --noinput &&
              python manage.py collectstatic --noinput &&

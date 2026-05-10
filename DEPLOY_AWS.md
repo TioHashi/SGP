@@ -42,10 +42,11 @@ FIREBASE_PROJECT_ID=ID_DO_PROJETO_FIREBASE
 FIREBASE_STORAGE_BUCKET=BUCKET_DO_FIREBASE
 ```
 
-Coloque a credencial do Firebase na raiz do projeto:
+Coloque a credencial do Firebase na pasta `secrets`:
 
 ```bash
-firebase-service-account.json
+mkdir -p secrets
+cp /caminho/do/firebase-service-account.json secrets/firebase-service-account.json
 ```
 
 ## Subir o sistema
