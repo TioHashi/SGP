@@ -77,4 +77,42 @@
       </dl>
     </article>
   </section>
+
+  <section class="functional-notes">
+    <article class="detail-card">
+      <h2>Observações da ficha</h2>
+      <form method="post" class="note-form">
+        {% csrf_token %}
+        <label for="observacao_manual">Adicionar observação manual</label>
+        <textarea id="observacao_manual" name="observacao_manual" rows="4" placeholder="Ex: Entrou de férias em 10/07/2026, recebeu adiantamento do décimo terceiro, apresentou documento, etc."></textarea>
+        <button type="submit">Adicionar observação</button>
+      </form>
+
+      <div class="note-list">
+        {% for observacao in observacoes %}
+          <div>
+            <span>{{ observacao.criado_em|date:'d/m/Y H:i' }}{% if observacao.criado_por %} · {{ observacao.criado_por.username }}{% endif %}</span>
+            <p>{{ observacao.texto }}</p>
+          </div>
+        {% empty %}
+          <p class="empty-note">Nenhuma observação manual registrada.</p>
+        {% endfor %}
+      </div>
+    </article>
+
+    <article class="detail-card">
+      <h2>Histórico automático</h2>
+      <div class="event-list">
+        {% for evento in eventos %}
+          <div>
+            <span>{{ evento.data|date:'d/m/Y H:i' }} · {{ evento.tipo }}</span>
+            <strong>{{ evento.titulo }}</strong>
+            <p>{{ evento.texto }}</p>
+          </div>
+        {% empty %}
+          <p class="empty-note">Nenhum evento automático registrado para este servidor.</p>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
 {% endblock %}

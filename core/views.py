@@ -9,7 +9,7 @@ from django.utils.text import slugify
 
 from .forms import FolhaFiltroForm, ServidorForm, TransferirServidorForm
 from .firebase import upload_pdf
-from .models import Escola, FolhaAlteracao, FolhaExclusao, FolhaPdf, Frequencia, Servidor, TransferenciaServidor
+from .models import Escola, FolhaAlteracao, FolhaExclusao, FolhaPdf, Frequencia, Servidor, ServidorObservacao, TransferenciaServidor
 from .pdfs import folha_pdf_bytes
 
 
@@ -181,7 +181,57 @@ def servidor_lista(request):
 @login_required
 def servidor_ficha(request, pk):
     servidor = get_object_or_404(servidores_permitidos(request.user), pk=pk)
-    return render(request, 'core/servidor_ficha.html', {'servidor': servidor})
+    if request.method == 'POST':
+        texto = request.POST.get('observacao_manual', '').strip()
+        if texto:
+            ServidorObservacao.objects.create(servidor=servidor, texto=texto, criado_por=request.user)
+            messages.success(request, 'Observação adicionada à ficha do servidor.')
+        else:
+            messages.error(request, 'Escreva uma observação antes de salvar.')
+        return redirect('servidor_ficha', pk=servidor.pk)
+
+    eventos = []
+    meses = dict(Frequencia.MESES_CHOICES)
+
+    for frequencia in servidor.frequencias.exclude(observacoes='').order_by('-ano', '-mes')[:12]:
+        eventos.append({
+            'data': frequencia.atualizado_em,
+            'titulo': frequencia.get_observacoes_display() or frequencia.observacoes,
+            'texto': f'Folha de {meses.get(frequencia.mes, frequencia.mes)}/{frequencia.ano}.',
+            'tipo': 'Folha',
+        })
+
+    for exclusao in servidor.exclusoes_folha.select_related('criado_por').order_by('-criado_em')[:12]:
+        eventos.append({
+            'data': exclusao.criado_em,
+            'titulo': 'Exclusão de folha extra',
+            'texto': f'{meses.get(exclusao.mes, exclusao.mes)}/{exclusao.ano}: {exclusao.motivo or "sem motivo informado"}.',
+            'tipo': 'Folha extra',
+        })
+
+    for alteracao in servidor.alteracoes_folha.select_related('usuario').order_by('-criado_em')[:12]:
+        eventos.append({
+            'data': alteracao.criado_em,
+            'titulo': alteracao.campo,
+            'texto': f'{meses.get(alteracao.mes, alteracao.mes)}/{alteracao.ano}: de "{alteracao.valor_anterior or "vazio"}" para "{alteracao.valor_novo or "vazio"}".',
+            'tipo': 'Alteração',
+        })
+
+    for transferencia in servidor.transferencias.select_related('escola_origem', 'escola_destino').order_by('-criado_em')[:8]:
+        eventos.append({
+            'data': transferencia.respondido_em or transferencia.criado_em,
+            'titulo': 'Transferência de escola',
+            'texto': f'{transferencia.escola_origem.nome} para {transferencia.escola_destino.nome} - {transferencia.get_status_display()}.',
+            'tipo': 'Transferência',
+        })
+
+    observacoes = servidor.observacoes_funcionais.select_related('criado_por')
+    eventos = sorted(eventos, key=lambda item: item['data'], reverse=True)[:24]
+    return render(request, 'core/servidor_ficha.html', {
+        'servidor': servidor,
+        'eventos': eventos,
+        'observacoes': observacoes,
+    })
 
 
 @login_required

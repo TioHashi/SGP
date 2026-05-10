@@ -333,7 +333,7 @@ a {
 }
 
 .alert-bell.has-unread {
-  animation: bellSwing 1.35s ease-in-out infinite;
+  animation: bellSwing 2.8s ease-in-out infinite;
   filter: drop-shadow(0 0 5px rgba(255, 204, 51, 0.65));
 }
 
@@ -399,12 +399,23 @@ a {
   background: #f7fbff;
 }
 
-.alert-dropdown article.is-unread::before {
+.alert-dropdown article.is-unread::after {
+  animation: bellSwing 2.8s ease-in-out infinite;
   content: '🔔';
   font-size: 0.8rem;
-  left: 4px;
   position: absolute;
-  top: 12px;
+  right: 10px;
+  top: 10px;
+  transform-origin: 50% 0;
+}
+
+.alert-dropdown article.is-unread a {
+  display: block;
+  padding-right: 24px;
+}
+
+.alert-dropdown article.is-unread::before {
+  content: none;
 }
 
 .alert-dropdown article.is-read {
@@ -1657,8 +1668,10 @@ td a {
   align-items: center;
   display: grid;
   gap: 8px;
-  grid-template-columns: 112px 112px 100px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   justify-content: end;
+  max-width: 390px;
+  width: 100%;
 }
 
 .month-status,
@@ -1669,8 +1682,11 @@ td a {
   font-weight: 800;
   justify-content: center;
   min-height: 28px;
+  min-width: 0;
+  overflow: hidden;
   padding: 5px 8px;
   text-align: center;
+  text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
 }
@@ -1680,8 +1696,11 @@ td a {
   font-size: 0.74rem;
   justify-content: center;
   min-height: 28px;
+  min-width: 0;
+  overflow: hidden;
   padding: 5px 8px;
   text-align: center;
+  text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
 }
@@ -1741,6 +1760,29 @@ td a {
 
 .bottom-actions {
   margin-top: 16px;
+}
+
+.bottom-actions a,
+.bottom-actions button {
+  align-items: center;
+  border-radius: 6px;
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 9px;
+}
+
+.bottom-actions button {
+  background: var(--brand);
+  color: #fff;
+}
+
+.page-heading .primary-link {
+  font-size: 0.8rem;
+  min-height: 30px;
+  padding: 6px 9px;
 }
 
 .report-toolbar {
@@ -1979,6 +2021,82 @@ td a {
   overflow-wrap: anywhere;
 }
 
+.functional-notes {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  margin-top: 14px;
+}
+
+.note-form {
+  display: grid;
+  gap: 10px;
+}
+
+.note-form label {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.note-form textarea {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  min-height: 110px;
+  padding: 10px 12px;
+  resize: vertical;
+  width: 100%;
+}
+
+.note-form button {
+  background: var(--brand);
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  justify-self: start;
+  min-height: 32px;
+  padding: 7px 12px;
+}
+
+.note-list,
+.event-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.note-list div,
+.event-list div {
+  background: #f7fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.note-list span,
+.event-list span {
+  color: var(--muted);
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+
+.note-list p,
+.event-list p,
+.empty-note {
+  color: var(--muted);
+  line-height: 1.35;
+  margin: 4px 0 0;
+}
+
+.event-list strong {
+  display: block;
+}
+
 .transfer-summary span {
   color: var(--muted);
 }
@@ -2109,7 +2227,8 @@ td a {
   .dashboard-layout-secondary,
   .dashboard-strip,
   .profile-grid,
-  .detail-sections {
+  .detail-sections,
+  .functional-notes {
     grid-template-columns: 1fr;
   }
 
@@ -2170,7 +2289,8 @@ td a {
   }
 
   .month-actions {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr) minmax(0, 0.95fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: none;
     width: 100%;
   }
 

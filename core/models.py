@@ -302,3 +302,18 @@ class FolhaExclusao(models.Model):
 
     def __str__(self):
         return f'{self.servidor.nome} excluído de {self.get_mes_display()}/{self.ano}'
+
+
+class ServidorObservacao(models.Model):
+    servidor = models.ForeignKey(Servidor, on_delete=models.CASCADE, related_name='observacoes_funcionais')
+    texto = models.TextField()
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'observação funcional'
+        verbose_name_plural = 'observações funcionais'
+
+    def __str__(self):
+        return f'{self.servidor.nome} - {self.criado_em:%d/%m/%Y}'
