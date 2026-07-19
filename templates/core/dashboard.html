@@ -4,72 +4,126 @@
 {% block title %}SGP - Início{% endblock %}
 
 {% block content %}
-  <section class="dashboard-a4">
-    <header class="dash-cover">
-      <div>
-        <img class="dash-brand-image" src="{% static 'img/sgp-horizontal.png' %}" alt="SGP Sistema de Gerenciamento de Pessoas">
-        <p>Sistema de Gestão de Pessoal · SGP</p>
+  <section class="executive-dashboard">
+    <header class="executive-hero">
+      <div class="hero-copy">
+        <span class="eyebrow">
+          <i class="bi bi-stars"></i>
+          Sistema de Gestão de Pessoas
+        </span>
         <h1>{% if escola_atual %}{{ escola_atual.nome }}{% else %}Painel geral do SGP{% endif %}</h1>
-        <span>Resumo funcional da escola e acompanhamento da folha mensal</span>
+        <p>Visão executiva de servidores, vínculos, funções e saúde da folha para decisões rápidas e seguras.</p>
+        <div class="hero-actions">
+          <a class="primary-link" href="{% url 'servidor_lista' %}">
+            <i class="bi bi-person-lines-fill"></i>
+            Gerenciar servidores
+          </a>
+          <a class="toolbar-button" href="{% url 'folha_selecionar' %}">
+            <i class="bi bi-calendar2-week"></i>
+            Abrir folhas
+          </a>
+        </div>
       </div>
-      <aside>
-        <small>Relatório de</small>
-        <strong>{{ hoje|date:'l, d \\d\\e F \\d\\e Y' }}</strong>
-        <span>Folha em dia</span>
+
+      <aside class="hero-command-center">
+        <img src="{% static 'img/sgp-horizontal.png' %}" alt="SGP Sistema de Gestão de Pessoas">
+        <div>
+          <small>Hoje</small>
+          <strong>{{ hoje|date:'d/m/Y' }}</strong>
+        </div>
+        <span class="status-chip">
+          <i class="bi bi-shield-check"></i>
+          Folha monitorada
+        </span>
       </aside>
     </header>
 
-    <section class="dash-stat-grid">
+    <section class="kpi-grid">
       {% for card in cards %}
-        <article class="dash-stat tone-{{ forloop.counter }}">
-          <div>
-            <span>{{ card.label }}</span>
-            <strong>{{ card.value }}</strong>
-            <p>{{ card.hint }}</p>
-          </div>
+        <article class="kpi-card tone-{{ forloop.counter }}">
+          <span>{{ card.label }}</span>
+          <strong>{{ card.value }}</strong>
+          <p>{{ card.hint }}</p>
+          <i class="bi {% cycle 'bi-people-fill' 'bi-person-x-fill' 'bi-briefcase-fill' %}"></i>
         </article>
       {% endfor %}
+      <article class="kpi-card tone-4">
+        <span>Efetivos</span>
+        <strong>{{ efetivos_total }}</strong>
+        <p>Servidores com vínculo efetivo</p>
+        <i class="bi bi-patch-check-fill"></i>
+      </article>
+      <article class="kpi-card tone-5">
+        <span>Temporários</span>
+        <strong>{{ temporarios_total }}</strong>
+        <p>Servidores temporários ativos</p>
+        <i class="bi bi-hourglass-split"></i>
+      </article>
     </section>
 
-    <section class="dash-two-columns">
-      <article class="dash-panel">
-        <h2>Distribuição por Vínculo</h2>
-        <div class="dash-progress-grid">
+    <section class="executive-grid">
+      <article class="analytics-card chart-card">
+        <div class="panel-heading">
+          <div>
+            <span>Composição funcional</span>
+            <h2>Distribuição por vínculo</h2>
+          </div>
+          <i class="bi bi-pie-chart-fill"></i>
+        </div>
+        <div class="chart-box">
+          <canvas id="vinculoChart" aria-label="Gráfico de servidores por vínculo"></canvas>
+        </div>
+        <div class="mini-metrics">
           {% for item in vinculo_resumo %}
-            <div class="dash-progress-card">
-              <div><b>{{ item.label }}</b><strong>{{ item.percentual }}%</strong></div>
-              <span class="progress-track"><span style="width: {{ item.percentual_css }}%;"></span></span>
-              <p>{{ item.total }} servidor(es)</p>
+            <div>
+              <span>{{ item.label }}</span>
+              <strong>{{ item.total }}</strong>
+              <small>{{ item.percentual }}%</small>
             </div>
           {% empty %}
             <p>Nenhum vínculo cadastrado.</p>
           {% endfor %}
         </div>
-        <div class="dash-mini-grid">
-          <div><span>Ativos</span><strong>{{ status_resumo.ativos }}</strong></div>
-          <div><span>Inativos</span><strong>{{ status_resumo.inativos }}</strong></div>
-        </div>
       </article>
 
-      <article class="dash-panel">
-        <h2>Quadro da Escola</h2>
-        <ul class="dash-info-list">
-          <li><span>Servidores na folha</span><strong>{{ status_resumo.ativos }}</strong></li>
-          <li><span>Fora da folha mensal</span><strong>{{ status_resumo.inativos }}</strong></li>
-          <li><span>Funções cadastradas</span><strong>{{ funcoes|length }}</strong></li>
-          <li><span>Cargos cadastrados</span><strong>{{ cargos|length }}</strong></li>
+      <article class="analytics-card health-card" style="--health: {{ folha_saude }}; --health-color: {{ folha_saude_cor }};">
+        <div class="panel-heading">
+          <div>
+            <span>Controle mensal</span>
+            <h2>Saúde da folha</h2>
+          </div>
+          <i class="bi bi-activity"></i>
+        </div>
+        <div class="health-ring">
+          <strong>{{ folha_saude }}%</strong>
+          <span>Conformidade</span>
+        </div>
+        <ul class="health-list">
+          <li><span>Ativos</span><strong>{{ status_resumo.ativos }}</strong></li>
+          <li><span>Inativos</span><strong>{{ status_resumo.inativos }}</strong></li>
+          <li><span>Vínculos efetivos</span><strong>{{ efetivos_total }}</strong></li>
+          <li><span>Vínculos temporários</span><strong>{{ temporarios_total }}</strong></li>
         </ul>
       </article>
     </section>
 
-    <section class="dash-two-columns">
-      <article class="dash-panel">
-        <h2>Servidores por Função</h2>
-        <div class="dash-bars">
-          {% for item in funcoes %}
+    <section class="executive-grid lower-grid">
+      <article class="analytics-card">
+        <div class="panel-heading">
+          <div>
+            <span>Ranking operacional</span>
+            <h2>Servidores por função</h2>
+          </div>
+          <i class="bi bi-diagram-3-fill"></i>
+        </div>
+        <div class="chart-box chart-box-wide">
+          <canvas id="funcoesChart" aria-label="Gráfico de servidores por função"></canvas>
+        </div>
+        <div class="rank-list refined-list">
+          {% for item in funcoes|slice:':6' %}
             <div>
-              <p><b>{{ item.funcao }}</b><strong>{{ item.total }}</strong></p>
-              <span><span style="width: {{ item.percentual_css }}%;"></span></span>
+              <span>{{ item.funcao }}</span>
+              <b>{{ item.total }}</b>
             </div>
           {% empty %}
             <p>Nenhuma função cadastrada.</p>
@@ -77,13 +131,22 @@
         </div>
       </article>
 
-      <article class="dash-panel">
-        <h2>Servidores por Cargo</h2>
-        <div class="dash-bars accent-bars">
-          {% for item in cargos %}
+      <article class="analytics-card">
+        <div class="panel-heading">
+          <div>
+            <span>Mapa de cargos</span>
+            <h2>Servidores por cargo</h2>
+          </div>
+          <i class="bi bi-bar-chart-fill"></i>
+        </div>
+        <div class="chart-box chart-box-wide">
+          <canvas id="cargosChart" aria-label="Gráfico de servidores por cargo"></canvas>
+        </div>
+        <div class="rank-list refined-list accent-list">
+          {% for item in cargos|slice:':6' %}
             <div>
-              <p><b>{{ item.cargo }}</b><strong>{{ item.total }}</strong></p>
-              <span><span style="width: {{ item.percentual_css }}%;"></span></span>
+              <span>{{ item.cargo }}</span>
+              <b>{{ item.total }}</b>
             </div>
           {% empty %}
             <p>Nenhum cargo cadastrado.</p>
@@ -92,23 +155,102 @@
       </article>
     </section>
 
-    <section class="dash-two-columns">
-      <article class="dash-panel">
-        <h2>Próximos Compromissos</h2>
-        <div class="dash-events">
-          <div><strong>15</strong><span>Fechamento da folha mensal</span><small>Conferir lançamentos e observações</small></div>
-          <div><strong>15</strong><span>Envio do relatório à secretaria</span><small>Gerar PDF e arquivar relatório</small></div>
+    <section class="executive-grid lower-grid">
+      <article class="analytics-card commitments-card">
+        <div class="panel-heading">
+          <div>
+            <span>Agenda crítica</span>
+            <h2>Próximos compromissos</h2>
+          </div>
+          <i class="bi bi-calendar-event-fill"></i>
+        </div>
+        <div class="timeline-list">
+          <div>
+            <strong>15</strong>
+            <span>Fechamento da folha mensal</span>
+            <small>Conferir faltas, licenças, observações e pró-labore.</small>
+          </div>
+          <div>
+            <strong>15</strong>
+            <span>Envio do relatório à secretaria</span>
+            <small>Gerar PDF, arquivar e entregar a folha validada.</small>
+          </div>
         </div>
       </article>
-      <article class="dash-panel dash-health" style="--health: {{ folha_saude }}; --health-color: {{ folha_saude_cor }};">
-        <h2>Saúde da Folha</h2>
-        <div class="health-ring">
-          <strong>{{ folha_saude }}%</strong>
-          <span>Conformidade</span>
+
+      <article class="analytics-card quick-actions-card">
+        <div class="panel-heading">
+          <div>
+            <span>Acesso rápido</span>
+            <h2>Rotinas principais</h2>
+          </div>
+          <i class="bi bi-lightning-charge-fill"></i>
         </div>
-        <p>Revise mensalmente os vínculos e cargos para garantir o repasse correto.</p>
+        <div class="quick-actions">
+          <a href="{% url 'servidor_criar' %}"><i class="bi bi-person-plus-fill"></i><span>Cadastrar servidor</span></a>
+          <a href="{% url 'servidor_lista' %}"><i class="bi bi-search"></i><span>Buscar servidor</span></a>
+          <a href="{% url 'folha_selecionar' %}"><i class="bi bi-journal-check"></i><span>Processar folha</span></a>
+          <a href="{% url 'relatorios' %}"><i class="bi bi-file-earmark-pdf-fill"></i><span>Relatórios/PDF</span></a>
+        </div>
       </article>
     </section>
-
   </section>
+
+  {{ dashboard_data|json_script:"dashboard-data" }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script>
+    (() => {
+      const source = document.getElementById('dashboard-data');
+      if (!source || !window.Chart) return;
+      const data = JSON.parse(source.textContent || '{}');
+      const palette = ['#2563eb', '#f97316', '#10b981', '#7c3aed', '#ef4444', '#0ea5e9', '#f59e0b'];
+
+      const makeDoughnut = () => {
+        const el = document.getElementById('vinculoChart');
+        if (!el) return;
+        new Chart(el, {
+          type: 'doughnut',
+          data: {
+            labels: data.vinculos?.labels || [],
+            datasets: [{ data: data.vinculos?.data || [], backgroundColor: palette, borderWidth: 0 }]
+          },
+          options: {
+            cutout: '68%',
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, usePointStyle: true } } }
+          }
+        });
+      };
+
+      const makeBar = (id, labels, values, colors) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        new Chart(el, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              backgroundColor: colors,
+              borderRadius: 10,
+              borderSkipped: false,
+              maxBarThickness: 34
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#667085', font: { size: 10, weight: 700 } } },
+              y: { beginAtZero: true, ticks: { precision: 0, color: '#667085' }, grid: { color: 'rgba(148, 163, 184, .22)' } }
+            }
+          }
+        });
+      };
+
+      makeDoughnut();
+      makeBar('funcoesChart', data.funcoes?.labels || [], data.funcoes?.data || [], '#2563eb');
+      makeBar('cargosChart', data.cargos?.labels || [], data.cargos?.data || [], '#f97316');
+    })();
+  </script>
 {% endblock %}
