@@ -5,6 +5,8 @@ db.sqlite3
 data/
 secrets/
 staticfiles/
+tmp/
+tools/
 .env
 .env.production
 firebase-service-account.json
